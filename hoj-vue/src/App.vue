@@ -42,7 +42,6 @@
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
-<<<<<<< HEAD
             <el-col :md="6" :xs="24">
               <h1>Online Judge</h1>
               <p class="mb-1">
@@ -53,26 +52,11 @@
               </p>
               <p class="mb-1">
                 <a href="https://www.luogu.com.cn/" target="_blank">洛谷</a>
-=======
-            <el-col
-              :md="6"
-              :xs="24"
-            >
-              <h1>{{ $t('m.Development') }}</h1>
-              <p class="mb-1">
-                <a
-                  href="https://gitee.com/himitzh0730/hoj"
-                  target="_blank"
-                >{{
-                  $t('m.Open_Source')
-                }}</a>
->>>>>>> master
               </p>
             </el-col>
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
-<<<<<<< HEAD
             <el-col :md="6" :xs="24">
               <h1>友链</h1>
               <p class="mb-1">
@@ -83,25 +67,6 @@
               </p>
               <p class="mb-1">
                 <a href="http://acm.zzuli.edu.cn/contest.php?category=1" target="_blank">郑轻OJ</a>
-=======
-            <el-col
-              :md="6"
-              :xs="24"
-            >
-              <h1>{{ $t('m.Support') }}</h1>
-              <p>
-                <i
-                  class="fa fa-info-circle"
-                  aria-hidden="true"
-                ></i><a @click="goRoute('/introduction')"> {{ $t('m.NavBar_About') }}</a>
-              </p>
-              <p>
-                <i class="el-icon-document"></i>
-                <a
-                  href="https://docs.hdoi.cn"
-                  target="_blank"
-                > {{ $t('m.Help') }}</a>
->>>>>>> master
               </p>
             </el-col>
           </el-row>
@@ -124,17 +89,9 @@
               placement="top"
             >
               <span class="el-dropdown-link">
-<<<<<<< HEAD
                 <i class="fa fa-globe" aria-hidden="true">
                   {{ this.webLanguage == 'zh-CN' ? '简体中文' : '简体中文' }}</i
                 ><i class="el-icon-arrow-up el-icon--right"></i>
-=======
-                <i
-                  class="fa fa-globe"
-                  aria-hidden="true"
-                >
-                  {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i><i class="el-icon-arrow-up el-icon--right"></i>
->>>>>>> master
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
