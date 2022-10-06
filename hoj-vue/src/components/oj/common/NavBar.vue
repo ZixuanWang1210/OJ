@@ -9,18 +9,11 @@
         text-color="#495060"
       >
         <div class="logo">
-          <el-tooltip
-            :content="$t('m.Click_To_Change_Web_Language')"
-            placement="bottom"
-            effect="dark"
-          >
-            <el-image
-              style="width: 139px; height: 50px"
-              :src="imgUrl"
-              fit="scale-down"
-              @click="changeWebLanguage"
-            ></el-image>
-          </el-tooltip>
+          <el-image
+            style="width: 139px; height: 50px"
+            :src="imgUrl"
+            fit="scale-down"
+          ></el-image>
         </div>
         <el-menu-item index="/home"
           ><i class="el-icon-s-home"></i>{{ $t('m.NavBar_Home') }}</el-menu-item
@@ -73,9 +66,6 @@
           >
           <el-menu-item index="/introduction">{{
             $t('m.NavBar_Introduction')
-          }}</el-menu-item>
-          <el-menu-item index="/developer">{{
-            $t('m.NavBar_Developer')
           }}</el-menu-item>
         </el-submenu>
 

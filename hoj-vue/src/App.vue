@@ -30,33 +30,37 @@
                 <a @click="goRoute('/status')">{{ $t('m.Judging_Queue') }}</a>
               </p>
               <p>
-                <a @click="goRoute('/developer')">{{ $t('m.System_Info') }}</a>
+                <a @click="goRoute('/contest')">比赛</a>
               </p>
             </el-col>
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
             <el-col :md="6" :xs="24">
-              <h1>{{ $t('m.Development') }}</h1>
+              <h1>Online Judge</h1>
               <p class="mb-1">
-                <a href="https://gitee.com/himitzh0730/hoj" target="_blank">{{
-                  $t('m.Open_Source')
-                }}</a>
+                <a href="https://ac.nowcoder.com/acm/contest/vip-index" target="_blank">牛客竞赛</a>
               </p>
-              <p class="mb-1"><a @click="goRoute('/#')">API</a></p>
+              <p class="mb-1">
+                <a href="https://acwing.com/" target="_blank">AcWing</a>
+              </p>
+              <p class="mb-1">
+                <a href="https://www.luogu.com.cn/" target="_blank">洛谷</a>
+              </p>
             </el-col>
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
             <el-col :md="6" :xs="24">
-              <h1>{{ $t('m.Support') }}</h1>
-              <p>
-                <i class="fa fa-info-circle" aria-hidden="true"></i
-                ><a @click="goRoute('/introduction')"> {{ $t('m.NavBar_About') }}</a>
+              <h1>友链</h1>
+              <p class="mb-1">
+                <a href="https://software.henu.edu.cn/" target="_blank">软院官网</a>
               </p>
-              <p>
-                <i class="el-icon-document"></i>
-                <a href="https://docs.hdoi.cn" target="_blank"> {{ $t('m.Help') }}</a>
+              <p class="mb-1">
+                <a href="http://106.15.10.229/" target="_blank">计算机学院ACM-OJ</a>
+              </p>
+              <p class="mb-1">
+                <a href="http://acm.zzuli.edu.cn/contest.php?category=1" target="_blank">郑轻OJ</a>
               </p>
             </el-col>
           </el-row>
@@ -79,12 +83,12 @@
             <el-dropdown @command="changeWebLanguage" placement="top">
               <span class="el-dropdown-link">
                 <i class="fa fa-globe" aria-hidden="true">
-                  {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i
+                  {{ this.webLanguage == 'zh-CN' ? '简体中文' : '简体中文' }}</i
                 ><i class="el-icon-arrow-up el-icon--right"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
-                <el-dropdown-item command="en-US">English</el-dropdown-item>
+                <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </span>

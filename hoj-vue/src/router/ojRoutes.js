@@ -24,7 +24,7 @@ import ContestRejudgeAdmin from "@/views/oj/contest/children/ContestRejudgeAdmin
 import DiscussionList from "@/views/oj/discussion/discussionList.vue"
 import Discussion from "@/views/oj/discussion/discussion.vue"
 import Introduction from "@/views/oj/about/Introduction.vue"
-import Developer from "@/views/oj/about/Developer.vue"
+// import Developer from "@/views/oj/about/Developer.vue"
 import Message from "@/views/oj/message/message.vue"
 import UserMsg from "@/views/oj/message/UserMsg.vue"
 import SysMsg from "@/views/oj/message/SysMsg.vue"
@@ -382,11 +382,11 @@ const ojRoutes = [
     meta: {title: 'Introduction'},
     component:Introduction,
   },
-  {
-    path: '/developer',
-    meta: {title: 'Developer'},
-    component:Developer,
-  },
+  // {
+  //   path: '/developer',
+  //   meta: {title: 'Developer'},
+  //   component:Developer,
+  // },
   {
     name:'Message',
     path:'/message/',
