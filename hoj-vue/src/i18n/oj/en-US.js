@@ -5,6 +5,10 @@ export const m = {
   Server_error_please_refresh_again: 'Server error! Please refresh again!',
   Request_timed_out_please_try_again_later: 'Request timed out! Please try again later!',
   Network_error_abnormal_link_with_server_please_try_again_later: 'Network error! Abnormal link with server, Please try again later!',
+  Error:'Error',
+  No_Access_There_is_no_open_discussion_area_on_the_website: 'No Access: There is no open discussion area on the website!',
+  No_Access_There_is_no_open_group_discussion_area_on_the_website: 'No Access: There is no open group discussion area on the website!',
+  No_Access_There_is_no_open_contest_comment_area_on_the_website: 'No Access: There is no open contest comment area on the website!',
 
   //  /components/oj/common/NavBar.vue 导航栏
   NavBar_Home: 'Home',
@@ -113,7 +117,7 @@ export const m = {
 
   // /components/oj/setting/UserInfo.vue 
   Avatar_Setting: 'Avatar Setting',
-  UserInfo_Setting: 'UserInfo Setting',
+  UserInfo_Setting: 'User Info Setting',
   Upload_avatar_hint: 'Drag and drop the avatar here, or click here.',
   CF_Username: 'Codeforces Username',
   School: 'School',
@@ -185,7 +189,7 @@ export const m = {
 
   // /views/oj/Home.vue
   Welcome_to: 'Welcome to ',
-  Recent_7_Days_AC_Rank: 'Recent 7 Days AC Top 10 Rank',
+  Recent_7_Days_AC_Rank: 'Rank: Accepted In The Last Week',
   Other_OJ_Contest: 'Other Online Judge Contest',
   Supported_Remote_Online_Judge: 'Supported Remote Online Judge',
 
@@ -205,14 +209,14 @@ export const m = {
   Problem_ID: 'Problem ID',
   Total: 'Total',
   AC_Rate: 'AC Rate',
-  AC: 'Accepted',
+  AC: 'AC',
   Score: 'Score',
 
   // /views/oj/problem/problemList.vue
   Problem_List: 'Problem List',
   Problem_Bank: 'Problem Bank',
   All: 'All',
-  My_OJ: 'Mine',
+  My_OJ: 'Main',
   Level: 'Level',
   Tags: 'Tags',
   Search_Filter_Tag: 'Enter the tag name...',
@@ -249,7 +253,8 @@ export const m = {
   Memory_Limit: 'Memory Limit',
   Other: 'Other',
   Created: 'Created By',
-  Please_login_first: 'Please login first',
+  Please_login_first: 'Please login first!',
+  Please_login_first_by_admin_account:'Please login again with the administrator account!',
   Submit: 'Submit',
   Online_Test:'Online Test',
   Submitting: 'Submitting',
@@ -342,6 +347,8 @@ export const m = {
   Category: 'Category',
   Discussion_title: 'Title',
   Discussion_Desc: 'Description',
+  Associated_Problem:'Associated Problem ID',
+  Associated_Problem_Tips:'Associated Problem ID, e.g. P1000',
   Discussion_Category: 'Category',
   Discussion_top: 'Top',
   Discussion_content: 'Content',
@@ -394,6 +401,7 @@ export const m = {
   Print: 'Print',
   Admin_Print: 'Admin Print',
   Admin_Helper: 'AC Info',
+  ScrollBoard: 'Scroll Board',
   Register_contest_successfully: 'Register contest successfully',
   Please_check_the_contest_announcement_for_details: 'Please check the contest announcement for details',
   Go_To_Group_Contest_List:'Go to Group Contest List',
@@ -444,6 +452,16 @@ export const m = {
   Rejudge_All: 'Rejudge All',
   Rejudge_successfully: 'Rejudge successfully',
 
+  // /views/oj/contest/children/ScrollBoard.vue
+  ScrollBoard_Parameter_Config: 'Scroll Board Config',
+  Start_Rolling:'Start Rolling',
+  Contest_ID:'Contest ID',
+  Number_of_gold_medals:'Number of gold medals',
+  Number_of_silver_medals:'Number of silver medals',
+  Number_of_bronze_medals:'Number of bronze medals',
+  Formula_for_calculating_the_number_of_medals:'Formula for calculating the number of medals',
+  Contest_Non_Ended_But_Want_to_Scroll_Board:'The contest is not over yet. Are you sure you want to sroll the board?',
+
   // /views/oj/contest/children/OIContestRank.vue
   Total_Score: 'Total Score',
   Based_on_The_Highest_Score_Submitted_For_Each_Problem: 'Based on the highest score submitted for each problem',
@@ -459,6 +477,7 @@ export const m = {
   Judging_Description: 'Your program is running with test data. Please wait for the result...',
   Compile_Error_Description: "Failed to compile your source code. Click on the link to see compiler's output.",
   Persentation_Error_Description: 'The code you submitted is very close to the correct answer. Please check whether there are extra spaces, newlines and other blanks in the code format output.',
+  Partial_Accepted_Description:'Come on! The code you submitted has passed some test points. Please consider other possibilities.',
   Accepted_Description: 'Congratulations! Your solution is correct.',
   Wrong_Answer_Description: "Your program's output doesn't match judger's answer.",
   Runtime_Error_Description: 'Your program terminated abnormally. Possible reasons are: segment fault, divided by zero or exited with code other than 0.',
@@ -502,7 +521,7 @@ export const m = {
   Eight_Spaces:'8 spaces',
   Reset_Code: 'Reset Code',
   Upload_file: 'Upload file',
-  monokai: 'Mnokai',
+  monokai: 'Monokai',
   solarized: 'Molarized Light',
   material: 'Material',
   idea:'IDEA',
@@ -572,10 +591,11 @@ export const m = {
   Search_Training: 'Search Training',
   Training_Public: 'Public',
   Training_Private: 'Private',
-  Training_Category: 'Training Category',
-  Number: 'Number',
-  Problem_Number: 'Problem Number',
-  Recent_Update: 'Recent Update',
+  Training_Category: 'Category',
+  Number: 'ID',
+  Problem_Number: 'Num',
+  Recent_Update: 'Updated',
+  Progress:'Progress',
 
   // /views/oj/training/TrainingDetails.vue
   Training_Introduction: 'Training Introduction',
@@ -629,8 +649,6 @@ export const m = {
   Apply_Group: 'Apply to Join',
   Apply_Successfully: 'Apply Successfully',
   Exit_Group: 'Exit Group',
-  Applying:'Applying...',
-  Reject_Application:'Rejected',
   Exit_Group_Tips: 'Are you sure you want to exit the group? After exiting, you will no longer be able to view group resources!',
   Exit_Successfully: 'Exit Successfully',
   Disband_Group:'Disband Group',
@@ -698,6 +716,7 @@ export const m = {
   // GroupAdminProblemList.vue
   Group_Problem_Apply_Public:'Apply to join the public problem bank',
   Already_Public_Problem:'Already in the public problem bank',
+  Applying_for_Publicity:'Applying for publicity',
   Group_Problem_Apply_Public_Tips:'Are you sure you want to apply for this problem to be added to the public bank?',
   Cancel_Group_Problem_Apply_Public_Tips:'Do you want to cancel the application for this problem to be added to the public bank?'
 }

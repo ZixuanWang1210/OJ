@@ -55,8 +55,9 @@ module.exports = context => config({
                 title: '快速部署',
                 collapsable: true,
                 children: [
-                    'deploy/',
+                    'deploy/env',
 					'deploy/docker',
+					'deploy/setting',
 					'deploy/open-https',
 					'deploy/multi-judgeserver',
 					'deploy/update',
@@ -98,6 +99,7 @@ module.exports = context => config({
 					'use/testcase',
 					'use/training',
 					'use/contest',
+					'use/scroll-board',
 					'use/group',
 					'use/import-user',
 					'use/admin-user',

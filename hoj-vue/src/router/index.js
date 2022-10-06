@@ -7,6 +7,7 @@ import mMessage from '@/common/message'
 import store from '@/store'
 import NProgress from 'nprogress' // nprogress插件
 import 'nprogress/nprogress.css' // nprogress样式
+import i18n from '@/i18n'
 
 // 配置NProgress进度条选项  —— 动画效果
 NProgress.configure({ ease: 'ease', speed: 1000,showSpinner: false })
@@ -53,14 +54,15 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/admin/login' 
             })
+            mMessage.error(i18n.t('m.Please_login_first_by_admin_account'))
           }else{ // oj端
             next({
               path: '/home' 
             })
             store.commit('changeModalStatus',{mode: 'Login', visible: true})
+            mMessage.error(i18n.t('m.Please_login_first'))
+            store.commit("clearUserInfoAndToken");
           }
-          mMessage.error('Error！Please Login Again!')
-          store.commit("clearUserInfoAndToken");
         }
       }else if(to.matched.some(record => record.meta.requireAdmin)){ //判断是否需要管理员权限
         if(isAmdin){
@@ -70,14 +72,15 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/admin/login' 
             })
+            mMessage.error(i18n.t('m.Please_login_first_by_admin_account'))
           }else{
             next({
               path: '/home' 
             })
             store.commit('changeModalStatus',{mode: 'Login', visible: true})
+            mMessage.error(i18n.t('m.Please_login_first'))
+            store.commit("clearUserInfoAndToken");
           }  
-          mMessage.error('Error！Please Login Again!')
-          store.commit("clearUserInfoAndToken");
         }
       }else{
         next()
@@ -96,7 +99,7 @@ router.beforeEach((to, from, next) => {
         store.commit('changeModalStatus',{mode: 'Login', visible: true})
       }
       store.commit("clearUserInfoAndToken");
-      mMessage.error('Please Login First!')
+      mMessage.error(i18n.t('m.Please_login_first'))
     }
   } else { // 不需要登录认证的页面
     if(to.meta.access){ // 单级路由有access控制
@@ -107,7 +110,7 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/home' 
             })
-            mMessage.error('No Access: There is no open discussion area on the website!')
+            mMessage.error(i18n.t('m.No_Access_There_is_no_open_discussion_area_on_the_website'))
           }
           break;
         case 'groupDiscussion':
@@ -115,7 +118,7 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/home' 
             })
-            mMessage.error('No Access: There is no open group discussion area on the website!')
+            mMessage.error(i18n.t('m.No_Access_There_is_no_open_group_discussion_area_on_the_website'))
           }
           break;
         case 'contestComment':
@@ -123,7 +126,7 @@ router.beforeEach((to, from, next) => {
             next({
               path: '/home' 
             })
-            mMessage.error('No Access: There is no open contest comment area on the website!')
+            mMessage.error(i18n.t('m.No_Access_There_is_no_open_contest_comment_area_on_the_website'))
           }
           break;
       }

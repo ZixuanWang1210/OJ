@@ -262,6 +262,7 @@ export const m = {
   Compile: '编译',
   Compiled_Successfully: '编译成功',
   Code_Template: '代码模板',
+  Code_template_of_the_language_cannot_be_empty:'语言的代码模板不能为空！',
   Type: '类型',
   Judge_Samples: '评测数据',
   Problem_Sample: '测试用例',
@@ -354,7 +355,6 @@ export const m = {
   Private_Training: '私有训练',
   Training_Password: '训练密码',
   Edit_Training: '编辑训练',
-  Create_Training: '创建训练',
   Redirect_To_Category: '当前训练的分类列表为空，请先前往创建分类！',
   Redirect: '重定向',
 
@@ -369,7 +369,7 @@ export const m = {
   Update_Category: '修改分类',
   To_Add: '添加',
   To_Update: '更新',
-  Create_Training: '创建训练',
+
   Category_Name: '分类名称',
   Category_Color: '分类颜色',
   Delete_Category_Tips: '你是否确定删除该分类？',
@@ -425,6 +425,17 @@ export const m = {
   Show_Realname: '真实姓名',
   Account_Limit: '账号限制（登录用户名）',
   The_allowed_account_will_be: '允许参加比赛的用户名是：',
+  Contest_Award:'比赛奖项',
+  Contest_Award_Null:'不设置',
+  Contest_Award_Set_Number:'设置人数',
+  Contest_Award_Set_Proportion:'设置占比',
+  Contest_Award_Priority:'优先级',
+  Contest_Award_Name:'奖项名称',
+  Contest_Award_Background:'背景颜色',
+  Contest_Award_Color:'文本颜色',
+  Contest_Award_Show:'样式展示',
+  Contest_Award_Number:'人数',
+  Contest_Award_Proportion:'占比',
 
   // /views/admin/discussion/Discussion.vue
   Discussion_ID: '讨论ID',

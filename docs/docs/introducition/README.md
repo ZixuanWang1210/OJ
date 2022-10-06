@@ -22,20 +22,25 @@ HOJ，全称 Hcode Online Judge，是基于（springcloud+vue）前后端分离�
 ## 三、HOJ的特点
 :::tip
   - 适应：支持手机端，响应式布局
+
   - 设计：界面简约大方
+
   - 安全：判题使用 cgroup 隔离用户程序，杜绝卡评测；网站权限控制完善
+
   - 扩展：支持分布式判题
+
   - 简单：高度集中网站配置
+
   - 功能：
-    - 支持ACM、OI题目及比赛，比赛拥有外榜、打星队伍、关注队伍等功能
+    - 支持ACM、OI题目及比赛，比赛拥有外榜、打星队伍、关注队伍、滚榜等功能
     - 拥有讨论区、题目讨论、比赛讨论、同时拥有站内消息系统
     - 支持私有训练、公开训练（题单）
     - 支持私有团队、公开团队、保护团队
-    - 支持testlib的特殊判题
-    - 支持交互判题
-    - 支持在线调试
+    - 支持testlib的特殊评测、交互评测、子任务评测
+    - 支持在线自测调试
+
   - 多样：支持自身题目数据评测，也支持其它知名OJ（HDU、Codeforces、GYM、POJ、AtCoder、SPOJ）题目的爬取与提交
-  :::
+:::
 
 
 ## 四、使用HOJ的学校
@@ -118,13 +123,21 @@ HOJ，全称 Hcode Online Judge，是基于（springcloud+vue）前后端分离�
 
 - ACM比赛
 
-![比赛排行榜](https://img-blog.csdnimg.cn/c50140e3b73d482d82ca6f13f47aa080.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBASGltaXRfWkg=,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
+  ![比赛排行榜](https://img-blog.csdnimg.cn/c50140e3b73d482d82ca6f13f47aa080.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBASGltaXRfWkg=,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
 
 
 
 - OI比赛
 
   ![oi排行榜](https://img-blog.csdnimg.cn/67f6262854bb44efa70c374f1f156166.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBASGltaXRfWkg=,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
+
+
+
+
+- 滚榜
+
+  ![在这里插入图片描述](https://img-blog.csdnimg.cn/8f8258babd3f43f78802144e7ecf18fe.png)
+
 
 
 ### 6. 评测

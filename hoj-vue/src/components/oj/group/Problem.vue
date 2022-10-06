@@ -655,6 +655,7 @@
                   <vxe-table-column
                     field="score"
                     :title="$t('m.Score')"
+                    v-if="problem.type == 1"
                     min-width="100"
                   >
                     <template v-slot="{ row }">
@@ -663,6 +664,7 @@
                         :placeholder="$t('m.Score')"
                         v-model="row.score"
                         :disabled="problem.type != 1"
+                        type="number"
                       >
                       </el-input>
                     </template>
@@ -900,6 +902,8 @@ export default {
         hint: "",
         source: "",
         cid: null,
+        isRemoveEndBlank:false,
+        openCaseResult: true,
         judgeMode: "default",
         judgeCaseMode: "default",
         userExtraFile: "",
@@ -990,6 +994,8 @@ export default {
         hint: "",
         source: "",
         cid: null,
+        isRemoveEndBlank:false,
+        openCaseResult: true,
         judgeMode: "default",
         judgeCaseMode: "default",
         userExtraFile: null,
@@ -1331,6 +1337,9 @@ export default {
         fileList[i].pid = this.problem.id;
       }
       this.problem.testCaseScore = fileList;
+      this.problem.testCaseScore.forEach((item, index) => {
+        item.index = index + 1;
+      });
       this.testCaseUploaded = true;
       this.problem.uploadTestcaseDir = response.data.fileListDir;
     },
@@ -1619,6 +1628,15 @@ export default {
           if (problemLanguageList[i].name == lang.name) {
             problemLanguageList[i] = lang;
             if (this.codeTemplate[lang.name].status) {
+              if(this.codeTemplate[lang.name].code == null 
+                || this.codeTemplate[lang.name].code.length == 0){
+                  mMessage.error(
+                    lang.name +
+                      "：" +
+                      this.$i18n.t("m.Code_template_of_the_language_cannot_be_empty")
+                  );
+                  return;
+              }
               this.problemCodeTemplate.push({
                 id: this.codeTemplate[lang.name].id,
                 pid: this.pid,

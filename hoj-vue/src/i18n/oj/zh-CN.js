@@ -5,7 +5,11 @@ export const m = {
   Server_error_please_refresh_again: '服务器错误，请重新刷新！',
   Request_timed_out_please_try_again_later: '请求超时，请稍后再尝试！',
   Network_error_abnormal_link_with_server_please_try_again_later: '网络错误，与服务器链接出现异常，请稍后再尝试！',
-  
+  Error:'错误',
+  No_Access_There_is_no_open_discussion_area_on_the_website: '禁止访问：当前网站未开启讨论区！',
+  No_Access_There_is_no_open_group_discussion_area_on_the_website: '禁止访问：当前网站未开启团队讨论区！',
+  No_Access_There_is_no_open_contest_comment_area_on_the_website: '禁止访问：当前网站未开启比赛评论区！',
+
   // /components/oj/common/NavBar.vue 导航栏
   NavBar_Home: '首页',
   NavBar_Problem: '题目',
@@ -185,7 +189,7 @@ export const m = {
 
   // /views/oj/Home.vue
   Welcome_to: '欢迎使用 ',
-  Recent_7_Days_AC_Rank: '最近7天内AC排名',
+  Recent_7_Days_AC_Rank: '最近一周过题榜单',
   Other_OJ_Contest: '其它OJ的近期比赛',
   Supported_Remote_Online_Judge: '支持的远程评测平台',
 
@@ -249,12 +253,13 @@ export const m = {
   Memory_Limit: '内存限制',
   Other: '其他语言',
   Created: '出题人',
-  Please_login_first: '请先登录',
+  Please_login_first: '请先登录!',
+  Please_login_first_by_admin_account:'请重新使用管理员账号登录！',
   Submit: '提交评测',
   Online_Test:'在线自测',
   Submitting: '提交中',
   Judging: '正在评测',
-  Wrong_Answer: 'Wrong Answer',
+  Wrong_Answer: '答案错误',
   View_Contest: '查看比赛',
   Are_you_sure_you_want_to_reset_your_code: '您确定要重置代码吗？',
   Code_can_not_be_empty: '代码不能为空',
@@ -328,7 +333,7 @@ export const m = {
   // /views/oj/rank/OIRank.vue
   OI_Ranklist: 'OI 排行榜',
 
-  // /views/oj/discussion/discussion.vue
+  // /views/oj/discussion/discussionList.vue
   Go_to_problem: '前往原题',
   Release_Time: '发布时间',
   Likes: '点赞',
@@ -344,6 +349,8 @@ export const m = {
   Category: '分类',
   Discussion_title: '标题',
   Discussion_Desc: '描述',
+  Associated_Problem:'讨论关联的题目ID',
+  Associated_Problem_Tips:'讨论关联的题目ID, 例如 P1000',
   Discussion_Category: '分类',
   Discussion_top: '是否置顶',
   Discussion_content: '内容',
@@ -354,7 +361,7 @@ export const m = {
   Post_successfully: '发布成功',
   Send_successfully: '发送成功',
 
-  // /views/oj/discussion/discussionList.vue
+  // /views/oj/discussion/discussion.vue
   Report: '举报',
   Like: '点赞',
   Liked: '已点赞',
@@ -396,6 +403,7 @@ export const m = {
   Print: '打印',
   Admin_Print: '管理打印',
   Admin_Helper: 'AC助手',
+  ScrollBoard: '滚榜',
   Register_contest_successfully: '比赛报名成功',
   Please_check_the_contest_announcement_for_details: '具体内容请查看比赛公告',
   Go_To_Group_Contest_List:'前往团队比赛列表',
@@ -446,6 +454,16 @@ export const m = {
   Contest_Rejudge_Tips: '您确定重测所有提交记录?',
   Rejudge_successfully: '重测成功',
 
+  // /views/oj/contest/children/ScrollBoard.vue
+  ScrollBoard_Parameter_Config: '滚榜参数配置',
+  Start_Rolling:'开始滚榜',
+  Contest_ID:'比赛ID',
+  Number_of_gold_medals:'金牌数量',
+  Number_of_silver_medals:'银牌数量',
+  Number_of_bronze_medals:'铜牌数量',
+  Formula_for_calculating_the_number_of_medals:'奖牌的计算公式',
+  Contest_Non_Ended_But_Want_to_Scroll_Board:'比赛还未结束，你确定是否前往滚榜？',
+
   // /views/oj/contest/children/OIContestRank.vue
   Total_Score: '总分',
   Based_on_The_Highest_Score_Submitted_For_Each_Problem: '以每题提交的最高得分计算',
@@ -461,6 +479,7 @@ export const m = {
   Judging_Description: '正在使用测试数据运行您的程序中，请等待结果...',
   Compile_Error_Description: "无法编译您的源代码，点击链接查看编译器的输出。",
   Persentation_Error_Description: '您提交的代码已经很接近正确答案，请检查代码格式输出是否有多余空格，换行等空白符。',
+  Partial_Accepted_Description:'加油！您提交的代码通过了部分测试点，请考虑其他可能性。',
   Accepted_Description: '恭喜! 您的解题方法是正确的。',
   Wrong_Answer_Description: "您的程序输出结果与判题程序的答案不符。",
   Runtime_Error_Description: '您的程序异常终止，可能的原因是：段错误，被零除或用非0的代码退出程序。',
@@ -577,6 +596,7 @@ export const m = {
   Number: '编号',
   Problem_Number: '题目数',
   Recent_Update: '最近更新',
+  Progress:'进度',
 
   // /views/oj/training/TrainingDetails.vue
   Training_Introduction: '训练简介',
@@ -698,6 +718,7 @@ export const m = {
   // GroupAdminProblemList.vue
   Group_Problem_Apply_Public:'申请加入公开题库',
   Already_Public_Problem:'已在公开题库中',
+  Applying_for_Publicity:'申请公开中',
   Group_Problem_Apply_Public_Tips:'您是否确定要申请该题目加入公开题库？',
   Cancel_Group_Problem_Apply_Public_Tips:'您是否要取消申请该题目加入公开题库？'
 }

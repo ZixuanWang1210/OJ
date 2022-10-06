@@ -82,8 +82,17 @@ public class TrainingManager {
 
         // 页数，每页题数若为空，设置默认值
         if (currentPage == null || currentPage < 1) currentPage = 1;
-        if (limit == null || limit < 1) limit = 30;
-        return trainingEntityService.getTrainingList(limit, currentPage, categoryId, auth, keyword);
+        if (limit == null || limit < 1) limit = 20;
+
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        String currentUid = null;
+        if (userRolesVo != null) {
+            currentUid = userRolesVo.getUid();
+        }
+
+        return trainingEntityService.getTrainingList(limit, currentPage, categoryId, auth, keyword, currentUid);
     }
 
 
@@ -105,10 +114,13 @@ public class TrainingManager {
             throw new StatusFailException("该训练不存在或不允许显示！");
         }
 
+        Long gid = training.getGid();
         if (training.getIsGroup()) {
             if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), training.getGid())) {
                 throw new StatusForbiddenException("对不起，您无权限操作！");
             }
+        } else {
+            gid = null;
         }
 
         TrainingVo trainingVo = BeanUtil.copyProperties(training, TrainingVo.class);
@@ -119,8 +131,8 @@ public class TrainingManager {
         trainingVo.setProblemCount(trainingProblemIdList.size());
 
         if (userRolesVo != null && trainingValidator.isInTrainingOrAdmin(training, userRolesVo)) {
-            Integer userTrainingACProblemCount = trainingProblemEntityService.getUserTrainingACProblemCount(userRolesVo.getUid(), trainingProblemIdList);
-            trainingVo.setAcCount(userTrainingACProblemCount);
+            Integer count = trainingProblemEntityService.getUserTrainingACProblemCount(userRolesVo.getUid(), gid, trainingProblemIdList);
+            trainingVo.setAcCount(count);
         } else {
             trainingVo.setAcCount(0);
         }

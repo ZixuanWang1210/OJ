@@ -11,7 +11,10 @@
       <footer>
         <div class="mundb-footer">
           <el-row>
-            <el-col :md="6" :xs="24">
+            <el-col
+              :md="6"
+              :xs="24"
+            >
               <h1>{{ websiteConfig.name }}</h1>
               <span
                 style="line-height:25px"
@@ -24,7 +27,10 @@
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
-            <el-col :md="6" :xs="24">
+            <el-col
+              :md="6"
+              :xs="24"
+            >
               <h1>{{ $t('m.Service') }}</h1>
               <p>
                 <a @click="goRoute('/status')">{{ $t('m.Judging_Queue') }}</a>
@@ -36,6 +42,7 @@
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
+<<<<<<< HEAD
             <el-col :md="6" :xs="24">
               <h1>Online Judge</h1>
               <p class="mb-1">
@@ -46,11 +53,26 @@
               </p>
               <p class="mb-1">
                 <a href="https://www.luogu.com.cn/" target="_blank">洛谷</a>
+=======
+            <el-col
+              :md="6"
+              :xs="24"
+            >
+              <h1>{{ $t('m.Development') }}</h1>
+              <p class="mb-1">
+                <a
+                  href="https://gitee.com/himitzh0730/hoj"
+                  target="_blank"
+                >{{
+                  $t('m.Open_Source')
+                }}</a>
+>>>>>>> master
               </p>
             </el-col>
             <el-col class="hr-none">
               <el-divider></el-divider>
             </el-col>
+<<<<<<< HEAD
             <el-col :md="6" :xs="24">
               <h1>友链</h1>
               <p class="mb-1">
@@ -61,6 +83,25 @@
               </p>
               <p class="mb-1">
                 <a href="http://acm.zzuli.edu.cn/contest.php?category=1" target="_blank">郑轻OJ</a>
+=======
+            <el-col
+              :md="6"
+              :xs="24"
+            >
+              <h1>{{ $t('m.Support') }}</h1>
+              <p>
+                <i
+                  class="fa fa-info-circle"
+                  aria-hidden="true"
+                ></i><a @click="goRoute('/introduction')"> {{ $t('m.NavBar_About') }}</a>
+              </p>
+              <p>
+                <i class="el-icon-document"></i>
+                <a
+                  href="https://docs.hdoi.cn"
+                  target="_blank"
+                > {{ $t('m.Help') }}</a>
+>>>>>>> master
               </p>
             </el-col>
           </el-row>
@@ -70,21 +111,30 @@
             style="color:#1E9FFF"
             :href="websiteConfig.recordUrl"
             target="_blank"
-            >{{ websiteConfig.recordName }}</a
-          >
+          >{{ websiteConfig.recordName }}</a>
           Powered by
           <a
             :href="websiteConfig.projectUrl"
             style="color:#1E9FFF"
             target="_blank"
-            >{{ websiteConfig.projectName }}</a
-          >
+          >{{ websiteConfig.projectName }}</a>
           <span style="margin-left:10px">
-            <el-dropdown @command="changeWebLanguage" placement="top">
+            <el-dropdown
+              @command="changeWebLanguage"
+              placement="top"
+            >
               <span class="el-dropdown-link">
+<<<<<<< HEAD
                 <i class="fa fa-globe" aria-hidden="true">
                   {{ this.webLanguage == 'zh-CN' ? '简体中文' : '简体中文' }}</i
                 ><i class="el-icon-arrow-up el-icon--right"></i>
+=======
+                <i
+                  class="fa fa-globe"
+                  aria-hidden="true"
+                >
+                  {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i><i class="el-icon-arrow-up el-icon--right"></i>
+>>>>>>> master
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
@@ -106,11 +156,12 @@
 </template>
 
 <script>
-import NavBar from '@/components/oj/common/NavBar';
-import { mapActions, mapState, mapGetters } from 'vuex';
-import { LOGO, MOTTO } from '@/common/logo';
+import NavBar from "@/components/oj/common/NavBar";
+import { mapActions, mapState, mapGetters } from "vuex";
+import { LOGO, MOTTO } from "@/common/logo";
+import storage from "@/common/storage";
 export default {
-  name: 'app-content',
+  name: "app-content",
   components: {
     NavBar,
   },
@@ -120,20 +171,80 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['changeDomTitle', 'getWebsiteConfig']),
+    ...mapActions(["changeDomTitle", "getWebsiteConfig"]),
     goRoute(path) {
       this.$router.push({
         path: path,
       });
     },
     changeWebLanguage(language) {
-      this.$store.commit('changeWebLanguage', { language: language });
+      this.$store.commit("changeWebLanguage", { language: language });
+    },
+    autoChangeLanguge() {
+      /**
+       * 语言自动转换优先级：路径参数 > 本地存储 > 浏览器自动识别
+       */
+      let lang = this.$route.query.l;
+      if (lang) {
+        lang = lang.toLowerCase();
+        if (lang == "zh-cn") {
+          this.$store.commit("changeWebLanguage", { language: "zh-CN" });
+        } else {
+          this.$store.commit("changeWebLanguage", { language: "en-US" });
+        }
+        return;
+      }
+
+      lang = storage.get("Web_Language");
+      if (lang) {
+        return;
+      }
+
+      lang = navigator.userLanguage || window.navigator.language;
+      lang = lang.toLowerCase();
+      if (lang == "zh-cn") {
+        this.$store.commit("changeWebLanguage", { language: "zh-CN" });
+      } else {
+        this.$store.commit("changeWebLanguage", { language: "en-US" });
+      }
+    },
+    autoRefreshUserInfo() {
+      let strogeToken = localStorage.getItem("token");
+      if (document.hidden == false && this.token != strogeToken) {
+        if (strogeToken) {
+          this.$store.commit("changeUserToken", strogeToken);
+          this.$store.dispatch("setUserInfo", storage.get("userInfo"));
+          // if(this.$route.path.startsWith('/admin')){
+          //   this.$router.replace({
+          //     path: "/home",
+          //   });
+          // }
+        } else {
+          if (this.token) {
+            this.$store.dispatch("clearUserInfoAndToken");
+            let path = this.$route.path;
+            if (path.startsWith("/admin")) {
+              if (path != "/admin/login") {
+                this.$router.replace({
+                  path: "/admin/login",
+                });
+              }
+            } else {
+              if (path != "/home") {
+                this.$router.replace({
+                  path: "/home",
+                });
+              }
+            }
+          }
+        }
+      }
     },
   },
   watch: {
     $route(newVal, oldVal) {
       this.changeDomTitle();
-      if (newVal !== oldVal && newVal.path.split('/')[1] == 'admin') {
+      if (newVal !== oldVal && newVal.path.split("/")[1] == "admin") {
         this.isAdminView = true;
       } else {
         this.isAdminView = false;
@@ -144,32 +255,33 @@ export default {
     },
   },
   computed: {
-    ...mapState(['websiteConfig']),
-    ...mapGetters(['webLanguage']),
+    ...mapState(["websiteConfig"]),
+    ...mapGetters(["webLanguage", "token"]),
   },
-  created: function() {
-    this.$nextTick(function() {
+  created: function () {
+    this.$nextTick(function () {
       try {
-        document.body.removeChild(document.getElementById('app-loader'));
+        document.body.removeChild(document.getElementById("app-loader"));
       } catch (e) {}
     });
 
-    if (this.$route.path.split('/')[1] != 'admin') {
+    if (this.$route.path.split("/")[1] != "admin") {
       this.isAdminView = false;
     } else {
       this.isAdminView = true;
     }
+    window.addEventListener("visibilitychange", this.autoRefreshUserInfo);
   },
   mounted() {
     console.log(LOGO);
     console.log(MOTTO);
+    this.autoChangeLanguge();
     this.getWebsiteConfig();
   },
 };
 </script>
 
 <style>
-
 * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -177,8 +289,8 @@ export default {
 }
 body {
   background-color: #eff3f5 !important;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', '微软雅黑', Arial, sans-serif !important;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "微软雅黑", Arial, sans-serif !important;
   color: #495060 !important;
   font-size: 12px !important;
 }
@@ -269,7 +381,33 @@ a:hover {
 
 .home-title {
   color: #409eff;
-  font-family: 'Raleway';
+  font-family: "Raleway";
+}
+
+.contest-rank-switch {
+  margin-bottom: 30px;
+  margin-top: -8px;
+}
+.contest-rank-switch span {
+  margin-left: 5px;
+}
+.contest-rank-concerned {
+  font-size: 1rem;
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+  vertical-align: top;
+}
+.contest-rank-concerned i {
+  margin-top: 11px;
+  cursor: pointer;
+}
+.contest-rank-user-box{
+  display: flex;
+}
+.contest-rank-user-info{
+  flex: 1;
+  text-align:right;
+  min-width: 0;
 }
 
 .contest-username {
@@ -278,11 +416,17 @@ a:hover {
   color: black;
   font-size: 13.5px;
   font-weight: 550;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .contest-school {
   font-size: 12px;
   font-weight: normal;
   color: dimgrey;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
 }
 .contest-rank-flag {
   margin-right: 20px !important;
@@ -503,7 +647,7 @@ a:hover {
 }
 
 .tex-font-style-sf {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .tex-font-style-tt {
@@ -616,7 +760,7 @@ footer h1 {
   margin-top: 0 !important;
 }
 .markdown-body pre ol.pre-numbering li:before {
-  content: counter(sectioncounter) '';
+  content: counter(sectioncounter) "";
   counter-increment: sectioncounter;
   display: inline-block;
   width: 40px;
@@ -684,7 +828,7 @@ footer h1 {
   line-height: 1.43;
 }
 .markdown-body h3:before {
-  content: '';
+  content: "";
   border-left: 4px solid #03a9f4;
   padding-left: 6px;
 }
@@ -692,7 +836,7 @@ footer h1 {
   font-size: 1.12em;
 }
 .markdown-body h4:before {
-  content: '';
+  content: "";
   border-left: 4px solid #bbb;
   padding-left: 6px;
 }
