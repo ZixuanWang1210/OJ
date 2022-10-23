@@ -6,15 +6,9 @@
         :router="true"
         :default-active="currentPath"
       >
-        <el-tooltip
-            :content="$t('m.Click_To_Change_Web_Language')"
-            placement="bottom"
-            effect="dark"
-          >
-          <div class="logo" @click="changeWebLanguage(webLanguage == 'zh-CN' ? 'en-US' : 'zh-CN')">
+          <div class="logo" >
             <img :src="imgUrl" alt="Online Judge Admin" />
           </div>
-        </el-tooltip>
         <el-menu-item index="/admin/">
           <i class="fa fa-tachometer fa-size" aria-hidden="true"></i
           >{{ $t('m.Dashboard') }}
@@ -516,12 +510,8 @@
             <span class="el-dropdown-link" style="font-size:14px">
               <i class="fa fa-globe" aria-hidden="true">
                 {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i
-              ><i class="el-icon-arrow-up el-icon--right"></i>
+              >
             </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
-              <el-dropdown-item command="en-US">English</el-dropdown-item>
-            </el-dropdown-menu>
           </el-dropdown>
         </span>
       </div>
