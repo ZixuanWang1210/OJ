@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.stereotype.Service;
 import top.hcode.hoj.common.result.CommonResult;
 import top.hcode.hoj.manager.oj.HomeManager;
-import top.hcode.hoj.pojo.vo.ACMRankVo;
-import top.hcode.hoj.pojo.vo.AnnouncementVo;
-import top.hcode.hoj.pojo.vo.ContestVo;
+import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.service.oj.HomeService;
 
 import javax.annotation.Resource;
@@ -26,7 +24,7 @@ public class HomeServiceImpl implements HomeService {
     private HomeManager homeManager;
 
     @Override
-    public CommonResult<List<ContestVo>> getRecentContest() {
+    public CommonResult<List<ContestVO>> getRecentContest() {
         return CommonResult.successResponse(homeManager.getRecentContest());
     }
 
@@ -36,7 +34,7 @@ public class HomeServiceImpl implements HomeService {
     }
 
     @Override
-    public CommonResult<List<ACMRankVo>> getRecentSevenACRank() {
+    public CommonResult<List<ACMRankVO>> getRecentSevenACRank() {
         return CommonResult.successResponse(homeManager.getRecentSevenACRank());
     }
 
@@ -46,12 +44,22 @@ public class HomeServiceImpl implements HomeService {
     }
 
     @Override
-    public CommonResult<IPage<AnnouncementVo>> getCommonAnnouncement(Integer limit, Integer currentPage) {
+    public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(Integer limit, Integer currentPage) {
         return CommonResult.successResponse(homeManager.getCommonAnnouncement(limit, currentPage));
     }
 
     @Override
     public CommonResult<Map<Object, Object>> getWebConfig() {
         return CommonResult.successResponse(homeManager.getWebConfig());
+    }
+
+    @Override
+    public CommonResult<List<RecentUpdatedProblemVO>> getRecentUpdatedProblemList() {
+        return CommonResult.successResponse(homeManager.getRecentUpdatedProblemList());
+    }
+
+    @Override
+    public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(Boolean forceRefresh) {
+        return CommonResult.successResponse(homeManager.getLastWeekSubmissionStatistics(forceRefresh));
     }
 }

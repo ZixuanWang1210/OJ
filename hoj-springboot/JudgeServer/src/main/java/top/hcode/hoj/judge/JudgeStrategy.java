@@ -60,8 +60,11 @@ public class JudgeStrategy {
             // 测试数据文件所在文件夹
             String testCasesDir = Constants.JudgeDir.TEST_CASE_DIR.getContent() + File.separator + "problem_" + problem.getId();
             // 从文件中加载测试数据json
-            JSONObject testCasesInfo = problemTestCaseUtils.loadTestCaseInfo(problem.getId(), testCasesDir, problem.getCaseVersion(),
-                    problem.getJudgeMode());
+            JSONObject testCasesInfo = problemTestCaseUtils.loadTestCaseInfo(problem.getId(),
+                    testCasesDir,
+                    problem.getCaseVersion(),
+                    problem.getJudgeMode(),
+                    problem.getJudgeCaseMode());
 
             // 检查是否为spj或者interactive，同时是否有对应编译完成的文件，若不存在，就先编译生成该文件，同时也要检查版本
             boolean isOk = checkOrCompileExtraProgram(problem);
@@ -72,13 +75,16 @@ public class JudgeStrategy {
                 result.put("memory", 0);
                 return result;
             }
-
             // 更新状态为评测数据中
             UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
             judgeUpdateWrapper.set("status", Constants.Judge.STATUS_JUDGING.getStatus())
                     .eq("submit_id", judge.getSubmitId());
             judgeEntityService.update(judgeUpdateWrapper);
-            String judgeCaseMode = testCasesInfo.getStr("judgeCaseMode", Constants.JudgeCaseMode.DEFAULT.getMode());
+
+            // 获取题目数据的评测模式
+            String infoJudgeCaseMode = testCasesInfo.getStr("judgeCaseMode", Constants.JudgeCaseMode.DEFAULT.getMode());
+            String judgeCaseMode = getFinalJudgeCaseMode(problem.getType(), problem.getJudgeCaseMode(), infoJudgeCaseMode);
+
             // 开始测试每个测试点
             List<JSONObject> allCaseResultList = judgeRun.judgeAllCase(judge.getSubmitId(),
                     problem,
@@ -100,7 +106,7 @@ public class JudgeStrategy {
             log.error("[Judge] [System Error] Submit Id:[{}] Problem Id:[{}], Error:[{}]",
                     judge.getSubmitId(),
                     problem.getId(),
-                    systemError.toString());
+                    systemError);
         } catch (SubmitError submitError) {
             result.put("code", Constants.Judge.STATUS_SUBMITTED_FAILED.getStatus());
             result.put("errMsg", mergeNonEmptyStrings(submitError.getMessage(), submitError.getStdout(), submitError.getStderr()));
@@ -109,7 +115,7 @@ public class JudgeStrategy {
             log.error("[Judge] [Submit Error] Submit Id:[{}] Problem Id:[{}], Error:[{}]",
                     judge.getSubmitId(),
                     problem.getId(),
-                    submitError.toString());
+                    submitError);
         } catch (CompileError compileError) {
             result.put("code", Constants.Judge.STATUS_COMPILE_ERROR.getStatus());
             result.put("errMsg", mergeNonEmptyStrings(compileError.getStdout(), compileError.getStderr()));
@@ -123,7 +129,7 @@ public class JudgeStrategy {
             log.error("[Judge] [System Runtime Error] Submit Id:[{}] Problem Id:[{}], Error:[{}]",
                     judge.getSubmitId(),
                     problem.getId(),
-                    e.toString());
+                    e);
         } finally {
 
             // 删除tmpfs内存中的用户代码可执行文件
@@ -446,7 +452,7 @@ public class JudgeStrategy {
     }
 
     public String mergeNonEmptyStrings(String... strings) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String str : strings) {
             if (!StringUtils.isEmpty(str)) {
                 sb.append(str.substring(0, Math.min(1024 * 1024, str.length()))).append("\n");
@@ -455,4 +461,16 @@ public class JudgeStrategy {
         return sb.toString();
     }
 
+    private String getFinalJudgeCaseMode(Integer type, String problemJudgeCaseMode, String infoJudgeCaseMode) {
+        if (problemJudgeCaseMode == null) {
+            return infoJudgeCaseMode;
+        }
+        if (Objects.equals(type, Constants.Contest.TYPE_ACM.getCode())) {
+            // ACM题目 以题目现有的judgeCaseMode为准
+            return problemJudgeCaseMode;
+        } else {
+            // OI题目 涉及到可能有子任务分组评测，还是依赖info文件的配置为准
+            return infoJudgeCaseMode;
+        }
+    }
 }

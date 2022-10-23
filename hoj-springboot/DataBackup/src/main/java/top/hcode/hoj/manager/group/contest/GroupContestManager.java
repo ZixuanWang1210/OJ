@@ -13,9 +13,10 @@ import top.hcode.hoj.dao.group.GroupEntityService;
 import top.hcode.hoj.pojo.entity.contest.Contest;
 import top.hcode.hoj.pojo.entity.contest.ContestRegister;
 import top.hcode.hoj.pojo.entity.group.Group;
-import top.hcode.hoj.pojo.vo.AdminContestVo;
-import top.hcode.hoj.pojo.vo.ContestVo;
-import top.hcode.hoj.pojo.vo.UserRolesVo;
+import top.hcode.hoj.pojo.vo.AdminContestVO;
+import top.hcode.hoj.pojo.vo.ContestAwardConfigVO;
+import top.hcode.hoj.pojo.vo.ContestVO;
+import top.hcode.hoj.pojo.vo.UserRolesVO;
 import top.hcode.hoj.utils.Constants;
 import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,9 +54,9 @@ public class GroupContestManager {
     @Autowired
     private GroupValidator groupValidator;
 
-    public IPage<ContestVo> getContestList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
+    public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -76,7 +78,7 @@ public class GroupContestManager {
 
     public IPage<Contest> getAdminContestList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -96,9 +98,9 @@ public class GroupContestManager {
         return groupContestEntityService.getAdminContestList(limit, currentPage, gid);
     }
 
-    public AdminContestVo getContest(Long cid) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
+    public AdminContestVO getContest(Long cid) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -121,20 +123,37 @@ public class GroupContestManager {
             throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
-        AdminContestVo adminContestVo = BeanUtil.copyProperties(contest, AdminContestVo.class, "starAccount");
+        AdminContestVO adminContestVo = BeanUtil.copyProperties(contest, AdminContestVO.class, "starAccount");
         if (StringUtils.isEmpty(contest.getStarAccount())) {
             adminContestVo.setStarAccount(new ArrayList<>());
         } else {
-            JSONObject jsonObject = JSONUtil.parseObj(contest.getStarAccount());
-            List<String> starAccount = jsonObject.get("star_account", List.class);
-            adminContestVo.setStarAccount(starAccount);
+            try {
+                JSONObject jsonObject = JSONUtil.parseObj(contest.getStarAccount());
+                List<String> starAccount = jsonObject.get("star_account", List.class);
+                adminContestVo.setStarAccount(starAccount);
+            } catch (Exception e) {
+                adminContestVo.setStarAccount(new ArrayList<>());
+            }
         }
+
+        if (contest.getAwardType() != null && contest.getAwardType() != 0) {
+            try {
+                JSONObject jsonObject = JSONUtil.parseObj(contest.getAwardConfig());
+                List<ContestAwardConfigVO> awardConfigList = jsonObject.get("config", List.class);
+                adminContestVo.setAwardConfigList(awardConfigList);
+            } catch (Exception e) {
+                adminContestVo.setAwardConfigList(new ArrayList<>());
+            }
+        } else {
+            adminContestVo.setAwardConfigList(new ArrayList<>());
+        }
+
         return adminContestVo;
     }
 
-    public void addContest(AdminContestVo adminContestVo) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
+    public void addContest(AdminContestVO adminContestVo) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -152,8 +171,20 @@ public class GroupContestManager {
 
         Contest contest = BeanUtil.copyProperties(adminContestVo, Contest.class, "starAccount");
         JSONObject accountJson = new JSONObject();
-        accountJson.set("star_account", adminContestVo.getStarAccount());
+        if (adminContestVo.getStarAccount() == null) {
+            accountJson.set("star_account", new ArrayList<>());
+        } else {
+            accountJson.set("star_account", adminContestVo.getStarAccount());
+        }
         contest.setStarAccount(accountJson.toString());
+
+        if (adminContestVo.getAwardType() != null && adminContestVo.getAwardType() != 0) {
+            JSONObject awardConfigJson = new JSONObject();
+            List<ContestAwardConfigVO> awardConfigList = adminContestVo.getAwardConfigList();
+            awardConfigList.sort(Comparator.comparingInt(ContestAwardConfigVO::getPriority));
+            awardConfigJson.set("config", awardConfigList);
+            contest.setAwardConfig(awardConfigJson.toString());
+        }
 
         contest.setIsGroup(true);
 
@@ -163,21 +194,21 @@ public class GroupContestManager {
         }
     }
 
-    public void updateContest(AdminContestVo adminContestVo) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
+    public void updateContest(AdminContestVO adminContestVo) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
         Long cid = adminContestVo.getId();
 
-        Contest contest = contestEntityService.getById(cid);
+        Contest oldContest = contestEntityService.getById(cid);
 
-        if (contest == null) {
+        if (oldContest == null) {
             throw new StatusNotFoundException("该比赛不存在！");
         }
 
-        Long gid = contest.getGid();
+        Long gid = oldContest.getGid();
 
         Group group = groupEntityService.getById(gid);
 
@@ -185,22 +216,30 @@ public class GroupContestManager {
             throw new StatusNotFoundException("该团队不存在或已被封禁！");
         }
 
-        if (!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+        if (!userRolesVo.getUid().equals(oldContest.getUid()) && !isRoot
                 && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
             throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
-        Contest contest1 = BeanUtil.copyProperties(adminContestVo, Contest.class, "starAccount");
+        Contest contest = BeanUtil.copyProperties(adminContestVo, Contest.class, "starAccount");
         JSONObject accountJson = new JSONObject();
         accountJson.set("star_account", adminContestVo.getStarAccount());
-        contest1.setStarAccount(accountJson.toString());
-        Contest oldContest = contestEntityService.getById(contest1.getId());
-        boolean isOk = contestEntityService.saveOrUpdate(contest1);
+        contest.setStarAccount(accountJson.toString());
+
+        if (adminContestVo.getAwardType() != null && adminContestVo.getAwardType() != 0) {
+            List<ContestAwardConfigVO> awardConfigList = adminContestVo.getAwardConfigList();
+            awardConfigList.sort(Comparator.comparingInt(ContestAwardConfigVO::getPriority));
+            JSONObject awardConfigJson = new JSONObject();
+            awardConfigJson.set("config", awardConfigList);
+            contest.setAwardConfig(awardConfigJson.toString());
+        }
+
+        boolean isOk = contestEntityService.saveOrUpdate(contest);
         if (isOk) {
-            if (!contest1.getAuth().equals(Constants.Contest.AUTH_PUBLIC.getCode())) {
-                if (!Objects.equals(oldContest.getPwd(), contest1.getPwd())) {
+            if (!contest.getAuth().equals(Constants.Contest.AUTH_PUBLIC.getCode())) {
+                if (!Objects.equals(oldContest.getPwd(), contest.getPwd())) {
                     UpdateWrapper<ContestRegister> updateWrapper = new UpdateWrapper<>();
-                    updateWrapper.eq("cid", contest1.getId());
+                    updateWrapper.eq("cid", contest.getId());
                     contestRegisterEntityService.remove(updateWrapper);
                 }
             }
@@ -211,7 +250,7 @@ public class GroupContestManager {
 
     public void deleteContest(Long cid) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -242,7 +281,7 @@ public class GroupContestManager {
 
     public void changeContestVisible(Long cid, Boolean visible) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 

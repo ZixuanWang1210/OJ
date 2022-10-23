@@ -150,6 +150,8 @@ export const m = {
   Personal_Profile: 'Persion Profile',
   UserHome_Solved_Problems: 'Solved Problems',
   Thermal_energy_table_submitted_in_the_last_year:'Thermal energy table submitted in the last year',
+  Difficulty_Statistics:'Difficulty Statistics',
+  Problems:'Problems',
   Calendar_Tooltip_Uint:'submissions',
   Jan: 'Jan', 
   Feb: 'Feb', 
@@ -191,8 +193,9 @@ export const m = {
   Welcome_to: 'Welcome to ',
   Recent_7_Days_AC_Rank: 'Rank: Accepted In The Last Week',
   Other_OJ_Contest: 'Other Online Judge Contest',
+  Latest_Problem: 'Latest Problem',
   Supported_Remote_Online_Judge: 'Supported Remote Online Judge',
-
+  Statistics_Submissions_In_The_Last_Week: 'Statistics: Submissions In The Last Week',
 
   // 表格通用列名,按钮，搜索框等
   Enter_keyword: 'Enter keyword',
@@ -261,7 +264,9 @@ export const m = {
   Judging: 'Judging',
   Wrong_Answer: 'Wrong Answer',
   View_Contest: 'View Contest',
-  Are_you_sure_you_want_to_reset_your_code: 'Are you sure you want to reset your code?',
+  Are_you_sure_you_want_to_reset_your_code: 'Are you sure you want to reset the original code? If the problem has a code template, it will be restored to the code of the original template, otherwise the code being edited will be cleared.',
+  Are_you_sure_you_want_to_get_your_recent_accepted_code:'Are you sure you want to get the recently passed code and fill it in the code box? Note: This operation will overwrite the code being edited!',
+  You_havenot_passed_the_problem_so_you_cannot_get_the_code_passed_recently:'You haven\'t passed the problem, so you can\'t get the code passed recently',
   Code_can_not_be_empty: 'Code can not be empty',
   Code_Length_can_not_exceed_65535: 'The code should contain no more than 65535 characters!',
   Submit_code_successfully: 'Submit code successfully',
@@ -358,6 +363,9 @@ export const m = {
   Delete_successfully: 'Delete Successfully',
   Post_successfully: 'Post Successfully',
   Send_successfully:'Send Successfully',
+  Can_not_exceed_255:'length cannot exceed 255',
+  Can_not_exceed_65535:'length cannot exceed 65535',
+  Can_not_exceed_10000:'length cannot exceed 10000',
 
   // /views/oj/discussion/discussion.vue
   Report: 'Report',
@@ -372,7 +380,7 @@ export const m = {
   Back: 'Back',
 
   // /views/oj/contest/ContestList.vue
-  Rule: 'Rule',
+  Contest_Rule: 'Rule',
   Running: 'Running',
   Scheduled: 'Scheduled',
   Ended: 'Ended',
@@ -423,6 +431,8 @@ export const m = {
   Star_User: 'Star User',
   Unfollow: 'Unfollow',
   Top_And_Follow: 'Top And Follow',
+  Contest_Rank_Search_Placeholder:'Please enter the user rank name or school name',
+  Contest_Rank_Setting:'Rank Setting',
 
   // /views/oj/contest/children/ACMInfo.vue
   AC_Time: 'AC Time',
@@ -540,6 +550,7 @@ export const m = {
   Expected_Output: 'Expected Output',
   Real_Output: 'Real Output',
   Pass_Test_Case: 'Pass Test Case',
+  Get_Recently_Passed_Code:'Get Recently Passed Code',
 
   // /components/oj/comment/Comment.vue
   Announcement_of_contest_Q_and_A_area: 'Announcement of Contest Q & A Area',
@@ -564,6 +575,8 @@ export const m = {
   Load_More: 'Load More',
   Delete_Comment_Tips: 'This operation will delete the comment and all its replies. Do you want to continue?',
   Delete_Reply_Tips: 'This operation will delete the reply. Do you want to continue?',
+  Reply_Content:'The reply content',
+  Comment_Content:'The comment content',
 
 
   // /views/oj/message/message.vue

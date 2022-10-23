@@ -28,12 +28,13 @@ import top.hcode.hoj.pojo.entity.discussion.DiscussionReport;
 import top.hcode.hoj.pojo.entity.problem.Category;
 import top.hcode.hoj.pojo.entity.problem.Problem;
 import top.hcode.hoj.pojo.entity.user.UserAcproblem;
-import top.hcode.hoj.pojo.vo.ConfigVo;
-import top.hcode.hoj.pojo.vo.DiscussionVo;
-import top.hcode.hoj.pojo.vo.UserRolesVo;
+import top.hcode.hoj.pojo.vo.ConfigVO;
+import top.hcode.hoj.pojo.vo.DiscussionVO;
+import top.hcode.hoj.pojo.vo.UserRolesVO;
 import top.hcode.hoj.utils.Constants;
 import top.hcode.hoj.utils.RedisUtils;
 import top.hcode.hoj.validator.AccessValidator;
+import top.hcode.hoj.validator.CommonValidator;
 import top.hcode.hoj.validator.GroupValidator;
 
 import java.util.List;
@@ -74,7 +75,10 @@ public class DiscussionManager {
     private AccessValidator accessValidator;
 
     @Autowired
-    private ConfigVo configVo;
+    private ConfigVO configVo;
+
+    @Autowired
+    private CommonValidator commonValidator;
 
     public IPage<Discussion> getDiscussionList(Integer limit,
                                                Integer currentPage,
@@ -84,7 +88,7 @@ public class DiscussionManager {
                                                String keyword,
                                                boolean admin) {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
 
@@ -140,11 +144,11 @@ public class DiscussionManager {
         return discussionIPage;
     }
 
-    public DiscussionVo getDiscussion(Integer did) throws StatusNotFoundException, StatusForbiddenException, AccessException {
+    public DiscussionVO getDiscussion(Integer did) throws StatusNotFoundException, StatusForbiddenException, AccessException {
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -165,7 +169,7 @@ public class DiscussionManager {
             uid = userRolesVo.getUid();
         }
 
-        DiscussionVo discussionVo = discussionEntityService.getDiscussion(did, uid);
+        DiscussionVO discussionVo = discussionEntityService.getDiscussion(did, uid);
 
         if (discussionVo == null) {
             throw new StatusNotFoundException("对不起，该讨论不存在！");
@@ -186,9 +190,14 @@ public class DiscussionManager {
 
     public void addDiscussion(Discussion discussion) throws StatusFailException, StatusForbiddenException, StatusNotFoundException {
 
+        commonValidator.validateContent(discussion.getTitle(), "讨论标题", 255);
+        commonValidator.validateContent(discussion.getDescription(), "讨论描述", 255);
+        commonValidator.validateContent(discussion.getContent(), "讨论", 65535);
+        commonValidator.validateNotEmpty(discussion.getCategoryId(), "讨论分类");
+
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -254,7 +263,7 @@ public class DiscussionManager {
 
     public void updateDiscussion(Discussion discussion) throws StatusFailException, StatusForbiddenException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -272,7 +281,7 @@ public class DiscussionManager {
     public void removeDiscussion(Integer did) throws StatusFailException, StatusForbiddenException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -301,7 +310,7 @@ public class DiscussionManager {
     public void addDiscussionLike(Integer did, boolean toLike) throws StatusFailException, StatusForbiddenException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         Discussion discussion = discussionEntityService.getById(did);
         if (discussion.getGid() != null) {
@@ -360,7 +369,7 @@ public class DiscussionManager {
                         && !category.getName().trim().isEmpty())
                 .collect(Collectors.toList());
         boolean isOk = categoryEntityService.saveOrUpdateBatch(categories);
-        if (!isOk){
+        if (!isOk) {
             throw new StatusFailException("修改失败");
         }
         return categoryEntityService.list();

@@ -1,7 +1,7 @@
 package top.hcode.hoj.manager.oj;
 
 import cn.hutool.core.collection.CollectionUtil;
-import top.hcode.hoj.validator.GroupValidator;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -9,19 +9,24 @@ import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import top.hcode.hoj.annotation.HOJAccessEnum;
 import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.common.exception.StatusForbiddenException;
 import top.hcode.hoj.common.exception.StatusNotFoundException;
-import top.hcode.hoj.pojo.dto.PidListDto;
+import top.hcode.hoj.dao.contest.ContestEntityService;
+import top.hcode.hoj.dao.judge.JudgeEntityService;
+import top.hcode.hoj.dao.problem.*;
+import top.hcode.hoj.exception.AccessException;
+import top.hcode.hoj.pojo.dto.LastAcceptedCodeVO;
+import top.hcode.hoj.pojo.dto.PidListDTO;
 import top.hcode.hoj.pojo.entity.contest.Contest;
 import top.hcode.hoj.pojo.entity.judge.Judge;
 import top.hcode.hoj.pojo.entity.problem.*;
 import top.hcode.hoj.pojo.vo.*;
-import top.hcode.hoj.dao.contest.ContestEntityService;
-import top.hcode.hoj.dao.judge.JudgeEntityService;
-import top.hcode.hoj.dao.problem.*;
 import top.hcode.hoj.utils.Constants;
+import top.hcode.hoj.validator.AccessValidator;
 import top.hcode.hoj.validator.ContestValidator;
+import top.hcode.hoj.validator.GroupValidator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,13 +68,16 @@ public class ProblemManager {
     @Autowired
     private GroupValidator groupValidator;
 
+    @Autowired
+    private AccessValidator accessValidator;
+
     /**
      * @MethodName getProblemList
      * @Params * @param null
      * @Description 获取题目列表分页
      * @Since 2020/10/27
      */
-    public Page<ProblemVo> getProblemList(Integer limit, Integer currentPage,
+    public Page<ProblemVO> getProblemList(Integer limit, Integer currentPage,
                                           String keyword, List<Long> tagId, Integer difficulty, String oj) {
         // 页数，每页题数若为空，设置默认值
         if (currentPage == null || currentPage < 1) currentPage = 1;
@@ -91,7 +99,7 @@ public class ProblemManager {
      * @Description 随机选取一道题目
      * @Since 2020/10/27
      */
-    public RandomProblemVo getRandomProblem() throws StatusFailException {
+    public RandomProblemVO getRandomProblem() throws StatusFailException {
         QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
         // 必须是公开题目
         queryWrapper.select("problem_id").eq("auth", 1)
@@ -102,7 +110,7 @@ public class ProblemManager {
         }
         Random random = new Random();
         int index = random.nextInt(list.size());
-        RandomProblemVo randomProblemVo = new RandomProblemVo();
+        RandomProblemVO randomProblemVo = new RandomProblemVO();
         randomProblemVo.setProblemId(list.get(index).getProblemId());
         return randomProblemVo;
     }
@@ -112,11 +120,11 @@ public class ProblemManager {
      * @Description 获取用户对应该题目列表中各个题目的做题情况
      * @Since 2020/12/29
      */
-    public HashMap<Long, Object> getUserProblemStatus(PidListDto pidListDto) throws StatusNotFoundException {
+    public HashMap<Long, Object> getUserProblemStatus(PidListDTO pidListDto) throws StatusNotFoundException {
 
         // 需要获取一下该token对应用户的数据
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
         HashMap<Long, Object> result = new HashMap<>();
         // 先查询判断该用户对于这些题是否已经通过，若已通过，则无论后续再提交结果如何，该题都标记为通过
         QueryWrapper<Judge> queryWrapper = new QueryWrapper<>();
@@ -218,9 +226,9 @@ public class ProblemManager {
      * @Description 获取指定题目的详情信息，标签，所支持语言，做题情况（只能查询公开题目 也就是auth为1）
      * @Since 2020/10/27
      */
-    public ProblemInfoVo getProblemInfo(String problemId, Long gid) throws StatusNotFoundException, StatusForbiddenException {
+    public ProblemInfoVO getProblemInfo(String problemId, Long gid) throws StatusNotFoundException, StatusForbiddenException {
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -268,7 +276,7 @@ public class ProblemManager {
             });
         }
         // 获取题目的提交记录
-        ProblemCountVo problemCount = judgeEntityService.getProblemCount(problem.getId(), gid);
+        ProblemCountVO problemCount = judgeEntityService.getProblemCount(problem.getId(), gid);
 
         // 获取题目的代码模板
         QueryWrapper<CodeTemplate> codeTemplateQueryWrapper = new QueryWrapper<>();
@@ -286,7 +294,67 @@ public class ProblemManager {
                 .setSpjLanguage(null);
 
         // 将数据统一写入到一个Vo返回数据实体类中
-        return new ProblemInfoVo(problem, tags, languagesStr, problemCount, LangNameAndCode);
+        return new ProblemInfoVO(problem, tags, languagesStr, problemCount, LangNameAndCode);
     }
 
+    public LastAcceptedCodeVO getUserLastAcceptedCode(Long pid, Long cid) {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+        if (cid == null) {
+            cid = 0L;
+        }
+        QueryWrapper<Judge> judgeQueryWrapper = new QueryWrapper<>();
+        judgeQueryWrapper.select("submit_id", "cid", "code", "username", "submit_time", "language")
+                .eq("uid", userRolesVo.getUid())
+                .eq("pid", pid)
+                .eq("cid", cid)
+                .eq("status", 0)
+                .orderByDesc("submit_id")
+                .last("limit 1");
+        List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
+        LastAcceptedCodeVO lastAcceptedCodeVO = new LastAcceptedCodeVO();
+        if (CollectionUtil.isNotEmpty(judgeList)) {
+            Judge judge = judgeList.get(0);
+            lastAcceptedCodeVO.setSubmitId(judge.getSubmitId());
+            lastAcceptedCodeVO.setLanguage(judge.getLanguage());
+            lastAcceptedCodeVO.setCode(buildCode(judge));
+        } else {
+            lastAcceptedCodeVO.setCode("");
+        }
+        return lastAcceptedCodeVO;
+    }
+
+    private String buildCode(Judge judge) {
+        if (judge.getCid() == 0) {
+            // 比赛外的提交代码 如果不是超管或题目管理员，需要检查网站是否开启隐藏代码功能
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
+            boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");// 是否为题目管理员
+            if (!isRoot && !isProblemAdmin) {
+                try {
+                    accessValidator.validateAccess(HOJAccessEnum.HIDE_NON_CONTEST_SUBMISSION_CODE);
+                } catch (AccessException e) {
+                    return "Because the super administrator has enabled " +
+                            "the function of not viewing the submitted code outside the contest of master station, \n" +
+                            "the code of this submission details has been hidden.";
+                }
+            }
+        }
+        if (!judge.getLanguage().toLowerCase().contains("py")) {
+            return judge.getCode() + "\n\n" +
+                    "/**\n" +
+                    "* @runId: " + judge.getSubmitId() + "\n" +
+                    "* @language: " + judge.getLanguage() + "\n" +
+                    "* @author: " + judge.getUsername() + "\n" +
+                    "* @submitTime: " + DateUtil.format(judge.getSubmitTime(), "yyyy-MM-dd HH:mm:ss") + "\n" +
+                    "*/";
+        } else {
+            return judge.getCode() + "\n\n" +
+                    "'''\n" +
+                    "    @runId: " + judge.getSubmitId() + "\n" +
+                    "    @language: " + judge.getLanguage() + "\n" +
+                    "    @author: " + judge.getUsername() + "\n" +
+                    "    @submitTime: " + DateUtil.format(judge.getSubmitTime(), "yyyy-MM-dd HH:mm:ss") + "\n" +
+                    "'''";
+        }
+    }
 }

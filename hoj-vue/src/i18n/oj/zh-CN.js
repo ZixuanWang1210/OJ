@@ -144,11 +144,13 @@ export const m = {
   UserHome_Submissions: '总交题数',
   UserHome_Score: 'OI分数',
   UserHome_Rating: 'CF分数',
-  List_Solved_Problems: '已解决问题列表',
+  List_Solved_Problems: '全部已解决问题列表',
   UserHome_Not_Data: '这家伙太懒了，还没有做过题...',
   Personal_Profile: '个人简介',
   UserHome_Solved_Problems: '做题情况',
   Thermal_energy_table_submitted_in_the_last_year:'最近一年提交热力表',
+  Difficulty_Statistics:'难度统计',
+  Problems:'题',
   Calendar_Tooltip_Uint:'次提交',
   Jan: '一月', 
   Feb: '二月', 
@@ -191,7 +193,9 @@ export const m = {
   Welcome_to: '欢迎使用 ',
   Recent_7_Days_AC_Rank: '最近一周过题榜单',
   Other_OJ_Contest: '其它OJ的近期比赛',
+  Latest_Problem: '最新题目',
   Supported_Remote_Online_Judge: '支持的远程评测平台',
+  Statistics_Submissions_In_The_Last_Week: '最近一周提交统计',
 
 
   // 表格通用列名,按钮，搜索框等
@@ -261,7 +265,9 @@ export const m = {
   Judging: '正在评测',
   Wrong_Answer: '答案错误',
   View_Contest: '查看比赛',
-  Are_you_sure_you_want_to_reset_your_code: '您确定要重置代码吗？',
+  Are_you_sure_you_want_to_reset_your_code: '你是否确定要重置原始代码？如果该题有代码模板，则还原为原始模板的代码，否则正在编辑的代码将清空。',
+  Are_you_sure_you_want_to_get_your_recent_accepted_code:'你是否确定要获取最近通过的代码并填充至代码框内？注意：该操作会覆盖正在编辑的代码！',
+  You_havenot_passed_the_problem_so_you_cannot_get_the_code_passed_recently:'你还未通过该题目，无法获取最近通过的代码！',
   Code_can_not_be_empty: '代码不能为空',
   Code_Length_can_not_exceed_65535: '代码的字符长度不能超过65535！',
   Submit_code_successfully: '提交代码成功',
@@ -360,6 +366,9 @@ export const m = {
   Delete_successfully: '删除成功',
   Post_successfully: '发布成功',
   Send_successfully: '发送成功',
+  Can_not_exceed_255:'的长度不能超过255',
+  Can_not_exceed_65535:'的长度不能超过65535',
+  Can_not_exceed_10000:'的长度不能超过10000',
 
   // /views/oj/discussion/discussion.vue
   Report: '举报',
@@ -374,7 +383,7 @@ export const m = {
   Back: '返回',
 
   // /views/oj/contest/ContestList.vue
-  Rule: '规则',
+  Contest_Rule: '赛制',
   Running: '进行中',
   Scheduled: '筹备中',
   Ended: '已结束',
@@ -425,6 +434,8 @@ export const m = {
   Star_User: '打星用户',
   Unfollow: '取消关注',
   Top_And_Follow: '置顶关注',
+  Contest_Rank_Search_Placeholder:'请输入用户名称 / 学校名称',
+  Contest_Rank_Setting:'榜单设置',
 
   // /views/oj/contest/children/ACMInfo.vue
   AC_Time: 'AC 时间',
@@ -521,7 +532,7 @@ export const m = {
   Two_Spaces:'2个空格',
   Four_Spaces:'4个空格',
   Eight_Spaces:'8个空格',
-  Reset_Code: '重置代码',
+  Reset_Code: '重置原始代码',
   Upload_file: '上传文件',
   monokai: 'Monokai',
   solarized: 'Molarized Light',
@@ -542,6 +553,7 @@ export const m = {
   Expected_Output: '预期输出',
   Real_Output: '实际输出',
   Pass_Test_Case: '通过测试用例',
+  Get_Recently_Passed_Code:'获取最近通过的代码',
 
   // /components/oj/comment/Comment.vue
   Announcement_of_contest_Q_and_A_area: '比赛评论区公告',
@@ -566,6 +578,8 @@ export const m = {
   Load_More: '加载更多',
   Delete_Comment_Tips: '此操作将删除该评论及其所有回复, 是否继续?',
   Delete_Reply_Tips: '此操作将删除该回复, 是否继续?',
+  Reply_Content:'回复内容',
+  Comment_Content:'评论内容',
 
   // /views/oj/message/message.vue
   Message_Center: '消息中心',

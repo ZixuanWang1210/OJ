@@ -41,11 +41,15 @@ export default {
         cid: this.$route.params.contestID,
         forceRefresh: this.forceUpdate ? true: false,
         removeStar: !this.showStarUser,
-        concernedList:this.concernedList
+        concernedList:this.concernedList,
+        currentPage: this.page,
+        limit: this.limit,
+        keyword: this.keyword == null? null: this.keyword.trim()
       }
       this.loading.rank = true;
       api.getContestOutsideScoreboard(data).then(res => {
-        this.applyToTable(res.data.data);
+        this.applyToTable(res.data.data.records);
+        this.total = res.data.data.total
         this.loading.rank = false;
       },(err)=>{
         this.loading.rank = false;

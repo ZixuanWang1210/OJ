@@ -1,6 +1,7 @@
 package top.hcode.hoj.judge;
 
 import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import org.springframework.util.StringUtils;
@@ -14,6 +15,7 @@ import top.hcode.hoj.util.JudgeUtils;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @Author: Himit_ZH
@@ -31,6 +33,8 @@ public abstract class AbstractJudge {
     protected static final int SPJ_WA = 102;
 
     protected static final int SPJ_ERROR = 103;
+
+    private final static Pattern EOL_PATTERN = Pattern.compile("[^\\S\\n]+(?=\\n)");
 
     public JSONObject judge(JudgeDTO judgeDTO, JudgeGlobalDTO judgeGlobalDTO) throws SystemError {
 
@@ -60,6 +64,7 @@ public abstract class AbstractJudge {
                 .memory(judgeResult.getLong("memory") / 1024) // b-->kb
                 .exitCode(judgeResult.getInt("exitStatus"))
                 .status(judgeResult.getInt("status"))
+                .originalStatus(judgeResult.getStr("originalStatus"))
                 .build();
 
         return checkResult(sandBoxRes, judgeDTO, judgeGlobalDTO);
@@ -75,6 +80,7 @@ public abstract class AbstractJudge {
                 .memory(userJudgeResult.getLong("memory") / 1024) // b-->kb
                 .exitCode(userJudgeResult.getInt("exitStatus"))
                 .status(userJudgeResult.getInt("status"))
+                .originalStatus(userJudgeResult.getStr("originalStatus"))
                 .build();
 
         JSONObject interactiveJudgeResult = (JSONObject) judgeResultList.get(1);
@@ -85,6 +91,7 @@ public abstract class AbstractJudge {
                 .memory(interactiveJudgeResult.getLong("memory") / 1024) // b-->kb
                 .exitCode(interactiveJudgeResult.getInt("exitStatus"))
                 .status(interactiveJudgeResult.getInt("status"))
+                .originalStatus(interactiveJudgeResult.getStr("originalStatus"))
                 .build();
 
         return checkMultipleResult(userSandBoxRes, interactiveSandBoxRes, judgeDTO, judgeGlobalDTO);
@@ -158,11 +165,6 @@ public abstract class AbstractJudge {
     // 去除行末尾空白符
     protected String rtrim(String value) {
         if (value == null) return null;
-        StringBuilder sb = new StringBuilder();
-        String[] strArr = value.split("\n");
-        for (String str : strArr) {
-            sb.append(str.replaceAll("\\s+$", "")).append("\n");
-        }
-        return sb.toString().replaceAll("\\s+$", "");
+        return EOL_PATTERN.matcher(StrUtil.trimEnd(value)).replaceAll("");
     }
 }

@@ -1,18 +1,21 @@
 package top.hcode.hoj.manager.oj;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.springframework.stereotype.Component;
 import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.common.exception.StatusForbiddenException;
 import top.hcode.hoj.common.exception.StatusNotFoundException;
-import top.hcode.hoj.pojo.dto.ContestRankDto;
-import top.hcode.hoj.pojo.entity.contest.Contest;
-import top.hcode.hoj.pojo.entity.contest.ContestProblem;
-import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.dao.contest.ContestEntityService;
 import top.hcode.hoj.dao.contest.ContestProblemEntityService;
+import top.hcode.hoj.pojo.dto.ContestRankDTO;
+import top.hcode.hoj.pojo.entity.contest.Contest;
+import top.hcode.hoj.pojo.entity.contest.ContestProblem;
+import top.hcode.hoj.pojo.vo.ContestOutsideInfoVO;
+import top.hcode.hoj.pojo.vo.ContestVO;
+import top.hcode.hoj.pojo.vo.UserRolesVO;
 import top.hcode.hoj.utils.Constants;
 import top.hcode.hoj.validator.ContestValidator;
 
@@ -40,9 +43,9 @@ public class ContestScoreboardManager {
     @Resource
     private ContestRankManager contestRankManager;
 
-    public ContestOutsideInfo getContestOutsideInfo(Long cid) throws StatusNotFoundException, StatusForbiddenException {
+    public ContestOutsideInfoVO getContestOutsideInfo(Long cid) throws StatusNotFoundException, StatusForbiddenException {
 
-        ContestVo contestInfo = contestEntityService.getContestInfoById(cid);
+        ContestVO contestInfo = contestEntityService.getContestInfoById(cid);
 
         if (contestInfo == null) {
             throw new StatusNotFoundException("访问错误：该比赛不存在！");
@@ -58,19 +61,19 @@ public class ContestScoreboardManager {
         }
 
         contestInfo.setNow(new Date());
-        ContestOutsideInfo contestOutsideInfo = new ContestOutsideInfo();
-        contestOutsideInfo.setContest(contestInfo);
+        ContestOutsideInfoVO contestOutsideInfoVO = new ContestOutsideInfoVO();
+        contestOutsideInfoVO.setContest(contestInfo);
 
         QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
         contestProblemQueryWrapper.eq("cid", cid).orderByAsc("display_id");
         List<ContestProblem> contestProblemList = contestProblemEntityService.list(contestProblemQueryWrapper);
-        contestOutsideInfo.setProblemList(contestProblemList);
+        contestOutsideInfoVO.setProblemList(contestProblemList);
 
-        return contestOutsideInfo;
+        return contestOutsideInfoVO;
     }
 
 
-    public List getContestOutsideScoreboard(ContestRankDto contestRankDto) throws StatusFailException, StatusForbiddenException {
+    public IPage getContestOutsideScoreboard(ContestRankDTO contestRankDto) throws StatusFailException, StatusForbiddenException {
 
         Long cid = contestRankDto.getCid();
         List<String> concernedList = contestRankDto.getConcernedList();
@@ -104,7 +107,7 @@ public class ContestScoreboardManager {
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         // 超级管理员或者该比赛的创建者，则为比赛管理者
         boolean isRoot = false;
@@ -119,6 +122,13 @@ public class ContestScoreboardManager {
             }
         }
 
+
+        Integer currentPage = contestRankDto.getCurrentPage();
+        Integer limit = contestRankDto.getLimit();
+        // 页数，每页题数若为空，设置默认值
+        if (currentPage == null || currentPage < 1) currentPage = 1;
+        if (limit == null || limit < 1) limit = 50;
+
         // 校验该比赛是否开启了封榜模式，超级管理员和比赛创建者可以直接看到实际榜单
         boolean isOpenSealRank = contestValidator.isSealRank(currentUid, contest, forceRefresh, isRoot);
 
@@ -132,6 +142,9 @@ public class ContestScoreboardManager {
                     null,
                     concernedList,
                     contestRankDto.getExternalCidList(),
+                    currentPage,
+                    limit,
+                    contestRankDto.getKeyword(),
                     !forceRefresh,
                     15L); // 默认15s缓存
 
@@ -143,6 +156,9 @@ public class ContestScoreboardManager {
                     null,
                     concernedList,
                     contestRankDto.getExternalCidList(),
+                    currentPage,
+                    limit,
+                    contestRankDto.getKeyword(),
                     !forceRefresh,
                     15L); // 默认15s缓存
         }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.springframework.stereotype.Component;
@@ -12,11 +13,11 @@ import org.springframework.util.StringUtils;
 import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.crawler.problem.ProblemStrategy;
 import top.hcode.hoj.manager.admin.problem.RemoteProblemManager;
-import top.hcode.hoj.pojo.dto.TrainingProblemDto;
+import top.hcode.hoj.pojo.dto.TrainingProblemDTO;
 import top.hcode.hoj.pojo.entity.problem.Problem;
 import top.hcode.hoj.pojo.entity.training.Training;
 import top.hcode.hoj.pojo.entity.training.TrainingProblem;
-import top.hcode.hoj.pojo.vo.UserRolesVo;
+import top.hcode.hoj.pojo.vo.UserRolesVO;
 import top.hcode.hoj.dao.problem.ProblemEntityService;
 import top.hcode.hoj.dao.training.TrainingProblemEntityService;
 import top.hcode.hoj.dao.training.TrainingEntityService;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  * @Description:
  */
 @Component
+@Slf4j(topic = "hoj")
 public class AdminTrainingProblemManager {
 
     @Resource
@@ -117,14 +119,13 @@ public class AdminTrainingProblemManager {
         }
     }
 
-    public void deleteProblem(Long pid,Long tid) throws StatusFailException {
+    public void deleteProblem(Long pid, Long tid) throws StatusFailException {
         boolean isOk = false;
         //  训练id不为null，表示就是从比赛列表移除而已
         if (tid != null) {
             QueryWrapper<TrainingProblem> trainingProblemQueryWrapper = new QueryWrapper<>();
             trainingProblemQueryWrapper.eq("tid", tid).eq("pid", pid);
             isOk = trainingProblemEntityService.remove(trainingProblemQueryWrapper);
-
         } else {
              /*
                 problem的id为其他表的外键的表中的对应数据都会被一起删除！
@@ -133,22 +134,32 @@ public class AdminTrainingProblemManager {
         }
 
         if (isOk) { // 删除成功
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
             if (tid == null) {
                 FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+                log.info("[{}],[{}],tid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                        "Admin_Training", "Delete_Problem", tid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+            } else {
+                log.info("[{}],[{}],tid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                        "Admin_Training", "Remove_Problem", tid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
             }
-
             // 更新训练最近更新时间
             UpdateWrapper<Training> trainingUpdateWrapper = new UpdateWrapper<>();
             trainingUpdateWrapper.set("gmt_modified", new Date())
                     .eq("id", tid);
             trainingEntityService.update(trainingUpdateWrapper);
-
         } else {
-            throw new StatusFailException("删除失败！");
+            String msg = "删除失败！";
+            if (tid != null) {
+                msg = "移除失败！";
+            }
+            throw new StatusFailException(msg);
         }
     }
 
-    public void addProblemFromPublic(TrainingProblemDto trainingProblemDto) throws StatusFailException {
+    public void addProblemFromPublic(TrainingProblemDTO trainingProblemDto) throws StatusFailException {
 
         Long pid = trainingProblemDto.getPid();
         Long tid = trainingProblemDto.getTid();
@@ -175,6 +186,12 @@ public class AdminTrainingProblemManager {
                     .eq("id", tid);
             trainingEntityService.update(trainingUpdateWrapper);
 
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+            log.info("[{}],[{}],tid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Training", "Add_Public_Problem", tid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+
             // 异步地同步用户对该题目的提交数据
             adminTrainingRecordManager.syncAlreadyRegisterUserRecord(tid, pid, newTProblem.getId());
         } else {
@@ -190,7 +207,7 @@ public class AdminTrainingProblemManager {
         // 如果该题目不存在，需要先导入
         if (problem == null) {
             Session session = SecurityUtils.getSubject().getSession();
-            UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
             try {
                 ProblemStrategy.RemoteProblemInfo otherOJProblemInfo = remoteProblemManager.getOtherOJProblemInfo(name.toUpperCase(), problemId, userRolesVo.getUsername());
                 if (otherOJProblemInfo != null) {
@@ -227,6 +244,13 @@ public class AdminTrainingProblemManager {
             trainingUpdateWrapper.set("gmt_modified", new Date())
                     .eq("id", tid);
             trainingEntityService.update(trainingUpdateWrapper);
+
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+            log.info("[{}],[{}],tid:[{}],pid:[{}],problemId:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Training", "Add_Remote_Problem", tid, problem.getId(), problem.getProblemId(),
+                    userRolesVo.getUid(), userRolesVo.getUsername());
 
             // 异步地同步用户对该题目的提交数据
             adminTrainingRecordManager.syncAlreadyRegisterUserRecord(tid, problem.getId(), newTProblem.getId());

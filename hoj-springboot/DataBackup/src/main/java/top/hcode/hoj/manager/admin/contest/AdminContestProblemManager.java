@@ -2,6 +2,7 @@ package top.hcode.hoj.manager.admin.contest;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.map.MapUtil;
+import lombok.extern.slf4j.Slf4j;
 import top.hcode.hoj.dao.contest.ContestEntityService;
 import top.hcode.hoj.pojo.entity.contest.Contest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -18,12 +19,12 @@ import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.common.exception.StatusForbiddenException;
 import top.hcode.hoj.crawler.problem.ProblemStrategy;
 import top.hcode.hoj.manager.admin.problem.RemoteProblemManager;
-import top.hcode.hoj.pojo.dto.ContestProblemDto;
-import top.hcode.hoj.pojo.dto.ProblemDto;
+import top.hcode.hoj.pojo.dto.ContestProblemDTO;
+import top.hcode.hoj.pojo.dto.ProblemDTO;
 import top.hcode.hoj.pojo.entity.contest.ContestProblem;
 import top.hcode.hoj.pojo.entity.judge.Judge;
 import top.hcode.hoj.pojo.entity.problem.Problem;
-import top.hcode.hoj.pojo.vo.UserRolesVo;
+import top.hcode.hoj.pojo.vo.UserRolesVO;
 import top.hcode.hoj.dao.contest.ContestProblemEntityService;
 import top.hcode.hoj.dao.judge.JudgeEntityService;
 import top.hcode.hoj.dao.problem.ProblemEntityService;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @Description:
  */
 @Component
+@Slf4j(topic = "hoj")
 public class AdminContestProblemManager {
 
     @Autowired
@@ -150,7 +152,7 @@ public class AdminContestProblemManager {
         if (problem != null) { // 查询成功
             // 获取当前登录的用户
             Session session = SecurityUtils.getSubject().getSession();
-            UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
             boolean isRoot = SecurityUtils.getSubject().hasRole("root");
             boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -175,19 +177,30 @@ public class AdminContestProblemManager {
             UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
             judgeUpdateWrapper.eq("cid", cid).eq("pid", pid);
             judgeEntityService.remove(judgeUpdateWrapper);
+
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+
+            log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Remove_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
         } else {
              /*
                 problem的id为其他表的外键的表中的对应数据都会被一起删除！
               */
             problemEntityService.removeById(pid);
-        }
-
-        if (cid == null) {
             FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+
+            log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Delete_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
         }
     }
 
-    public Map<Object, Object> addProblem(ProblemDto problemDto) throws StatusFailException {
+    public Map<Object, Object> addProblem(ProblemDTO problemDto) throws StatusFailException {
 
         QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("problem_id", problemDto.getProblem().getProblemId().toUpperCase());
@@ -206,10 +219,10 @@ public class AdminContestProblemManager {
         }
     }
 
-    public void updateProblem(ProblemDto problemDto) throws StatusForbiddenException, StatusFailException {
+    public void updateProblem(ProblemDTO problemDto) throws StatusForbiddenException, StatusFailException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -250,6 +263,11 @@ public class AdminContestProblemManager {
         boolean isOk = contestProblemEntityService.saveOrUpdate(contestProblem);
         if (isOk) {
             contestProblemEntityService.syncContestRecord(contestProblem.getPid(), contestProblem.getCid(), contestProblem.getDisplayId());
+            // 获取当前登录的用户
+            Session session = SecurityUtils.getSubject().getSession();
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+            log.info("[{}],[{}],cid:[{}],ContestProblem:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Update_Problem", contestProblem.getCid(), contestProblem, userRolesVo.getUid(), userRolesVo.getUsername());
             return contestProblem;
         } else {
             throw new StatusFailException("更新失败");
@@ -257,7 +275,7 @@ public class AdminContestProblemManager {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void addProblemFromPublic(ContestProblemDto contestProblemDto) throws StatusFailException {
+    public void addProblemFromPublic(ContestProblemDTO contestProblemDto) throws StatusFailException {
 
         Long pid = contestProblemDto.getPid();
         Long cid = contestProblemDto.getCid();
@@ -285,6 +303,12 @@ public class AdminContestProblemManager {
         if (!isOk || !updateProblem) {
             throw new StatusFailException("添加失败");
         }
+
+        // 获取当前登录的用户
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+        log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Add_Public_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -296,7 +320,7 @@ public class AdminContestProblemManager {
         // 如果该题目不存在，需要先导入
         if (problem == null) {
             Session session = SecurityUtils.getSubject().getSession();
-            UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+            UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
             try {
                 ProblemStrategy.RemoteProblemInfo otherOJProblemInfo = remoteProblemManager.getOtherOJProblemInfo(name.toUpperCase(), problemId, userRolesVo.getUsername());
                 if (otherOJProblemInfo != null) {
@@ -336,6 +360,13 @@ public class AdminContestProblemManager {
         if (!isOk || !updateProblem) {
             throw new StatusFailException("添加失败");
         }
+
+        // 获取当前登录的用户
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+        log.info("[{}],[{}],cid:[{}],pid:[{}],problemId:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Add_Remote_Problem", cid, problem.getId(), problem.getProblemId(),
+                userRolesVo.getUid(), userRolesVo.getUsername());
     }
 
 }

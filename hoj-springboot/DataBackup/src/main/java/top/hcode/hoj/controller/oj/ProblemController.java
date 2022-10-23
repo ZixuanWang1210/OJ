@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.hcode.hoj.common.result.CommonResult;
-import top.hcode.hoj.pojo.dto.PidListDto;
+import top.hcode.hoj.pojo.dto.LastAcceptedCodeVO;
+import top.hcode.hoj.pojo.dto.PidListDTO;
 import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.service.oj.ProblemService;
 
@@ -37,7 +38,7 @@ public class ProblemController {
      * @Since 2020/10/27
      */
     @RequestMapping(value = "/get-problem-list", method = RequestMethod.GET)
-    public CommonResult<Page<ProblemVo>> getProblemList(@RequestParam(value = "limit", required = false) Integer limit,
+    public CommonResult<Page<ProblemVO>> getProblemList(@RequestParam(value = "limit", required = false) Integer limit,
                                                         @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                         @RequestParam(value = "keyword", required = false) String keyword,
                                                         @RequestParam(value = "tagId", required = false) List<Long> tagId,
@@ -54,7 +55,7 @@ public class ProblemController {
      * @Since 2020/10/27
      */
     @GetMapping("/get-random-problem")
-    public CommonResult<RandomProblemVo> getRandomProblem() {
+    public CommonResult<RandomProblemVO> getRandomProblem() {
         return problemService.getRandomProblem();
     }
 
@@ -67,7 +68,7 @@ public class ProblemController {
      */
     @RequiresAuthentication
     @PostMapping("/get-user-problem-status")
-    public CommonResult<HashMap<Long, Object>> getUserProblemStatus(@Validated @RequestBody PidListDto pidListDto) {
+    public CommonResult<HashMap<Long, Object>> getUserProblemStatus(@Validated @RequestBody PidListDTO pidListDto) {
         return problemService.getUserProblemStatus(pidListDto);
     }
 
@@ -79,10 +80,23 @@ public class ProblemController {
      * @Since 2020/10/27
      */
     @RequestMapping(value = "/get-problem-detail", method = RequestMethod.GET)
-    public CommonResult<ProblemInfoVo> getProblemInfo(@RequestParam(value = "problemId", required = true) String problemId,
+    public CommonResult<ProblemInfoVO> getProblemInfo(@RequestParam(value = "problemId", required = true) String problemId,
                                                       @RequestParam(value = "gid", required = false) Long gid) {
-        return problemService.getProblemInfo(problemId,gid);
+        return problemService.getProblemInfo(problemId, gid);
     }
 
+    /**
+     * 获取用户对于该题最近AC的代码
+     *
+     * @param pid
+     * @param cid
+     * @return
+     */
+    @RequiresAuthentication
+    @GetMapping("/get-last-ac-code")
+    public CommonResult<LastAcceptedCodeVO> getUserLastAcceptedCode(@RequestParam(value = "pid") Long pid,
+                                                                    @RequestParam(value = "cid", required = false) Long cid) {
+        return problemService.getUserLastAcceptedCode(pid, cid);
+    }
 
 }

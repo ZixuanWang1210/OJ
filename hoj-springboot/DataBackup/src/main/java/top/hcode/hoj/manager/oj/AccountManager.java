@@ -13,17 +13,21 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.common.exception.StatusSystemErrorException;
-import top.hcode.hoj.pojo.dto.ChangeEmailDto;
-import top.hcode.hoj.pojo.dto.ChangePasswordDto;
-import top.hcode.hoj.pojo.dto.CheckUsernameOrEmailDto;
-import top.hcode.hoj.pojo.entity.judge.Judge;
-import top.hcode.hoj.pojo.entity.problem.Problem;
-import top.hcode.hoj.pojo.entity.user.*;
-import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.dao.problem.ProblemEntityService;
 import top.hcode.hoj.dao.user.*;
+import top.hcode.hoj.pojo.dto.ChangeEmailDTO;
+import top.hcode.hoj.pojo.dto.ChangePasswordDTO;
+import top.hcode.hoj.pojo.dto.CheckUsernameOrEmailDTO;
+import top.hcode.hoj.pojo.entity.judge.Judge;
+import top.hcode.hoj.pojo.entity.problem.Problem;
+import top.hcode.hoj.pojo.entity.user.Role;
+import top.hcode.hoj.pojo.entity.user.Session;
+import top.hcode.hoj.pojo.entity.user.UserAcproblem;
+import top.hcode.hoj.pojo.entity.user.UserInfo;
+import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.utils.Constants;
 import top.hcode.hoj.utils.RedisUtils;
+import top.hcode.hoj.validator.CommonValidator;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,6 +62,8 @@ public class AccountManager {
     @Autowired
     private SessionEntityService sessionEntityService;
 
+    @Autowired
+    private CommonValidator commonValidator;
 
     /**
      * @MethodName checkUsernameOrEmail
@@ -66,7 +72,7 @@ public class AccountManager {
      * @Return
      * @Since 2020/11/5
      */
-    public CheckUsernameOrEmailVo checkUsernameOrEmail(CheckUsernameOrEmailDto checkUsernameOrEmailDto) {
+    public CheckUsernameOrEmailVO checkUsernameOrEmail(CheckUsernameOrEmailDTO checkUsernameOrEmailDto) {
 
         String email = checkUsernameOrEmailDto.getEmail();
 
@@ -103,7 +109,7 @@ public class AccountManager {
             }
         }
 
-        CheckUsernameOrEmailVo checkUsernameOrEmailVo = new CheckUsernameOrEmailVo();
+        CheckUsernameOrEmailVO checkUsernameOrEmailVo = new CheckUsernameOrEmailVO();
         checkUsernameOrEmailVo.setEmail(rightEmail);
         checkUsernameOrEmailVo.setUsername(rightUsername);
         return checkUsernameOrEmailVo;
@@ -115,10 +121,10 @@ public class AccountManager {
      * @Description 前端userHome用户个人主页的数据请求，主要是返回解决题目数，AC的题目列表，提交总数，AC总数，Rating分，
      * @Since 2021/01/07
      */
-    public UserHomeVo getUserHomeInfo(String uid, String username) throws StatusFailException {
+    public UserHomeVO getUserHomeInfo(String uid, String username) throws StatusFailException {
 
         org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
         // 如果没有uid和username，默认查询当前登录用户的
         if (StringUtils.isEmpty(uid) && StringUtils.isEmpty(username)) {
             if (userRolesVo != null) {
@@ -128,7 +134,7 @@ public class AccountManager {
             }
         }
 
-        UserHomeVo userHomeInfo = userRecordEntityService.getUserHomeInfo(uid, username);
+        UserHomeVO userHomeInfo = userRecordEntityService.getUserHomeInfo(uid, username);
         if (userHomeInfo == null) {
             throw new StatusFailException("用户不存在");
         }
@@ -136,23 +142,23 @@ public class AccountManager {
         queryWrapper.eq("uid", userHomeInfo.getUid())
                 .select("distinct pid", "submit_id")
                 .orderByAsc("submit_id");
-        List<Long> pidList = new LinkedList<>();
+
         List<UserAcproblem> acProblemList = userAcproblemEntityService.list(queryWrapper);
-        acProblemList.forEach(acProblem -> {
-            pidList.add(acProblem.getPid());
-        });
+        List<Long> pidList = acProblemList.stream().map(UserAcproblem::getPid).collect(Collectors.toList());
 
         List<String> disPlayIdList = new LinkedList<>();
 
         if (pidList.size() > 0) {
             QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+            problemQueryWrapper.select("id", "problem_id", "difficulty");
             problemQueryWrapper.in("id", pidList);
             List<Problem> problems = problemEntityService.list(problemQueryWrapper);
-            problems.forEach(problem -> {
-                disPlayIdList.add(problem.getProblemId());
-            });
+            Map<Integer, List<UserHomeProblemVO>> map = problems.stream()
+                    .map(this::convertProblemVO)
+                    .collect(Collectors.groupingBy(UserHomeProblemVO::getDifficulty));
+            userHomeInfo.setSolvedGroupByDifficulty(map);
+            disPlayIdList = problems.stream().map(Problem::getProblemId).collect(Collectors.toList());
         }
-
         userHomeInfo.setSolvedList(disPlayIdList);
         QueryWrapper<Session> sessionQueryWrapper = new QueryWrapper<>();
         sessionQueryWrapper.eq("uid", userHomeInfo.getUid())
@@ -166,15 +172,23 @@ public class AccountManager {
         return userHomeInfo;
     }
 
+    private UserHomeProblemVO convertProblemVO(Problem problem) {
+        return UserHomeProblemVO.builder()
+                .problemId(problem.getProblemId())
+                .id(problem.getId())
+                .difficulty(problem.getDifficulty())
+                .build();
+    }
+
     /**
      * @param uid
      * @param username
      * @return
      * @Description 获取用户最近一年的提交热力图数据
      */
-    public UserCalendarHeatmapVo getUserCalendarHeatmap(String uid, String username) throws StatusFailException {
+    public UserCalendarHeatmapVO getUserCalendarHeatmap(String uid, String username) throws StatusFailException {
         org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
         if (StringUtils.isEmpty(uid) && StringUtils.isEmpty(username)) {
             if (userRolesVo != null) {
                 uid = userRolesVo.getUid();
@@ -182,7 +196,7 @@ public class AccountManager {
                 throw new StatusFailException("请求参数错误：uid和username不能都为空！");
             }
         }
-        UserCalendarHeatmapVo userCalendarHeatmapVo = new UserCalendarHeatmapVo();
+        UserCalendarHeatmapVO userCalendarHeatmapVo = new UserCalendarHeatmapVO();
         userCalendarHeatmapVo.setEndDate(DateUtil.format(new Date(), "yyyy-MM-dd"));
         List<Judge> lastYearUserJudgeList = userRecordEntityService.getLastYearUserJudgeList(uid, username);
         if (CollectionUtils.isEmpty(lastYearUserJudgeList)) {
@@ -213,7 +227,7 @@ public class AccountManager {
      * @Return
      * @Since 2021/1/8
      */
-    public ChangeAccountVo changePassword(ChangePasswordDto changePasswordDto) throws StatusSystemErrorException, StatusFailException {
+    public ChangeAccountVO changePassword(ChangePasswordDTO changePasswordDto) throws StatusSystemErrorException, StatusFailException {
         String oldPassword = changePasswordDto.getOldPassword();
         String newPassword = changePasswordDto.getNewPassword();
 
@@ -226,14 +240,14 @@ public class AccountManager {
         }
         // 获取当前登录的用户
         org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         // 如果已经被锁定半小时不能修改
         String lockKey = Constants.Account.CODE_CHANGE_PASSWORD_LOCK + userRolesVo.getUid();
         // 统计失败的key
         String countKey = Constants.Account.CODE_CHANGE_PASSWORD_FAIL + userRolesVo.getUid();
 
-        ChangeAccountVo resp = new ChangeAccountVo();
+        ChangeAccountVO resp = new ChangeAccountVO();
         if (redisUtils.hasKey(lockKey)) {
             long expire = redisUtils.getExpire(lockKey);
             Date now = new Date();
@@ -289,7 +303,7 @@ public class AccountManager {
      * @Return
      * @Since 2021/1/9
      */
-    public ChangeAccountVo changeEmail(ChangeEmailDto changeEmailDto) throws StatusSystemErrorException, StatusFailException {
+    public ChangeAccountVO changeEmail(ChangeEmailDTO changeEmailDto) throws StatusSystemErrorException, StatusFailException {
 
         String password = changeEmailDto.getPassword();
         String newEmail = changeEmailDto.getNewEmail();
@@ -302,14 +316,14 @@ public class AccountManager {
         }
         // 获取当前登录的用户
         org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         // 如果已经被锁定半小时不能修改
         String lockKey = Constants.Account.CODE_CHANGE_EMAIL_LOCK + userRolesVo.getUid();
         // 统计失败的key
         String countKey = Constants.Account.CODE_CHANGE_EMAIL_FAIL + userRolesVo.getUid();
 
-        ChangeAccountVo resp = new ChangeAccountVo();
+        ChangeAccountVO resp = new ChangeAccountVO();
         if (redisUtils.hasKey(lockKey)) {
             long expire = redisUtils.getExpire(lockKey);
             Date now = new Date();
@@ -331,7 +345,7 @@ public class AccountManager {
             boolean isOk = userInfoEntityService.update(updateWrapper);
             if (isOk) {
 
-                UserInfoVo userInfoVo = new UserInfoVo();
+                UserInfoVO userInfoVo = new UserInfoVO();
                 BeanUtil.copyProperties(userRolesVo, userInfoVo, "roles");
                 userInfoVo.setRoleList(userRolesVo.getRoles().stream().map(Role::getRole).collect(Collectors.toList()));
 
@@ -368,11 +382,7 @@ public class AccountManager {
     }
 
 
-    public UserInfoVo changeUserInfo(UserInfoVo userInfoVo) throws StatusFailException {
-
-        // 获取当前登录的用户
-        org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+    public UserInfoVO changeUserInfo(UserInfoVO userInfoVo) throws StatusFailException {
 
         String realname = userInfoVo.getRealname();
         String nickname = userInfoVo.getNickname();
@@ -382,6 +392,18 @@ public class AccountManager {
         if (!StringUtils.isEmpty(nickname) && nickname.length() > 20) {
             throw new StatusFailException("昵称的长度不能超过20位");
         }
+
+        commonValidator.validateContent(userInfoVo.getSignature(), "个性简介");
+        commonValidator.validateContent(userInfoVo.getBlog(), "博客",255);
+        commonValidator.validateContent(userInfoVo.getGithub(), "Github",255);
+        commonValidator.validateContent(userInfoVo.getSchool(), "学校",100);
+        commonValidator.validateContent(userInfoVo.getNumber(), "学号",200);
+        commonValidator.validateContent(userInfoVo.getCfUsername(), "Codeforces Username",255);
+
+        // 获取当前登录的用户
+        org.apache.shiro.session.Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
+
         UserInfo userInfo = new UserInfo();
         userInfo.setUuid(userRolesVo.getUid())
                 .setCfUsername(userInfoVo.getCfUsername())
@@ -399,10 +421,10 @@ public class AccountManager {
 
         if (isOk) {
             // 更新session
-            UserRolesVo userRoles = userRoleEntityService.getUserRoles(userRolesVo.getUid(), null);
+            UserRolesVO userRoles = userRoleEntityService.getUserRoles(userRolesVo.getUid(), null);
             session.setAttribute("userInfo", userRoles);
 
-            UserInfoVo userInfoRes = new UserInfoVo();
+            UserInfoVO userInfoRes = new UserInfoVO();
             BeanUtil.copyProperties(userRoles, userInfoRes, "roles");
             userInfoRes.setRoleList(userRoles.getRoles().stream().map(Role::getRole).collect(Collectors.toList()));
 

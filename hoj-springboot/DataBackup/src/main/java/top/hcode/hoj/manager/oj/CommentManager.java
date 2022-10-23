@@ -10,7 +10,6 @@ import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import top.hcode.hoj.annotation.HOJAccessEnum;
 import top.hcode.hoj.common.exception.StatusFailException;
 import top.hcode.hoj.common.exception.StatusForbiddenException;
@@ -21,7 +20,7 @@ import top.hcode.hoj.dao.discussion.DiscussionEntityService;
 import top.hcode.hoj.dao.discussion.ReplyEntityService;
 import top.hcode.hoj.dao.user.UserAcproblemEntityService;
 import top.hcode.hoj.exception.AccessException;
-import top.hcode.hoj.pojo.dto.ReplyDto;
+import top.hcode.hoj.pojo.dto.ReplyDTO;
 import top.hcode.hoj.pojo.entity.contest.Contest;
 import top.hcode.hoj.pojo.entity.discussion.Comment;
 import top.hcode.hoj.pojo.entity.discussion.CommentLike;
@@ -30,6 +29,7 @@ import top.hcode.hoj.pojo.entity.discussion.Reply;
 import top.hcode.hoj.pojo.entity.user.UserAcproblem;
 import top.hcode.hoj.pojo.vo.*;
 import top.hcode.hoj.validator.AccessValidator;
+import top.hcode.hoj.validator.CommonValidator;
 import top.hcode.hoj.validator.ContestValidator;
 import top.hcode.hoj.validator.GroupValidator;
 
@@ -75,15 +75,18 @@ public class CommentManager {
     private AccessValidator accessValidator;
 
     @Autowired
-    private ConfigVo configVo;
+    private CommonValidator commonValidator;
+
+    @Autowired
+    private ConfigVO configVo;
 
     private final static Pattern pattern = Pattern.compile("<.*?([a,A][u,U][t,T][o,O][p,P][l,L][a,A][y,Y]).*?>");
 
-    public CommentListVo getComments(Long cid, Integer did, Integer limit, Integer currentPage) throws StatusForbiddenException, AccessException {
+    public CommentListVO getComments(Long cid, Integer did, Integer limit, Integer currentPage) throws StatusForbiddenException, AccessException {
 
         // 如果有登录，则获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
@@ -103,7 +106,7 @@ public class CommentManager {
             accessValidator.validateAccess(HOJAccessEnum.CONTEST_COMMENT);
         }
 
-        IPage<CommentVo> commentList = commentEntityService.getCommentList(limit, currentPage, cid, did, isRoot,
+        IPage<CommentVO> commentList = commentEntityService.getCommentList(limit, currentPage, cid, did, isRoot,
                 userRolesVo != null ? userRolesVo.getUid() : null);
 
         HashMap<Integer, Boolean> commentLikeMap = new HashMap<>();
@@ -112,7 +115,7 @@ public class CommentManager {
             // 如果是有登录 需要检查是否对评论有点赞
             List<Integer> commentIdList = new LinkedList<>();
 
-            for (CommentVo commentVo : commentList.getRecords()) {
+            for (CommentVO commentVo : commentList.getRecords()) {
                 commentIdList.add(commentVo.getId());
             }
 
@@ -130,7 +133,7 @@ public class CommentManager {
             }
         }
 
-        CommentListVo commentListVo = new CommentListVo();
+        CommentListVO commentListVo = new CommentListVO();
         commentListVo.setCommentList(commentList);
         commentListVo.setCommentLikeMap(commentLikeMap);
         return commentListVo;
@@ -138,15 +141,13 @@ public class CommentManager {
 
 
     @Transactional
-    public CommentVo addComment(Comment comment) throws StatusFailException, StatusForbiddenException, AccessException {
+    public CommentVO addComment(Comment comment) throws StatusFailException, StatusForbiddenException, AccessException {
 
-        if (StringUtils.isEmpty(comment.getContent().trim())) {
-            throw new StatusFailException("评论内容不能为空！");
-        }
+        commonValidator.validateContent(comment.getContent(), "评论",10000);
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -207,7 +208,7 @@ public class CommentManager {
         boolean isOk = commentEntityService.saveOrUpdate(comment);
 
         if (isOk) {
-            CommentVo commentVo = new CommentVo();
+            CommentVO commentVo = new CommentVO();
             commentVo.setContent(comment.getContent());
             commentVo.setId(comment.getId());
             commentVo.setFromAvatar(comment.getFromAvatar());
@@ -242,7 +243,7 @@ public class CommentManager {
     public void deleteComment(Comment comment) throws StatusForbiddenException, StatusFailException, AccessException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -307,7 +308,7 @@ public class CommentManager {
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         QueryWrapper<CommentLike> commentLikeQueryWrapper = new QueryWrapper<>();
         commentLikeQueryWrapper.eq("cid", cid).eq("uid", userRolesVo.getUid());
@@ -348,11 +349,11 @@ public class CommentManager {
 
     }
 
-    public List<ReplyVo> getAllReply(Integer commentId, Long cid) throws StatusForbiddenException, StatusFailException, AccessException {
+    public List<ReplyVO> getAllReply(Integer commentId, Long cid) throws StatusForbiddenException, StatusFailException, AccessException {
 
         // 如果有登录，则获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
         if (cid == null) {
@@ -382,15 +383,13 @@ public class CommentManager {
     }
 
 
-    public ReplyVo addReply(ReplyDto replyDto) throws StatusFailException, StatusForbiddenException, AccessException {
+    public ReplyVO addReply(ReplyDTO replyDto) throws StatusFailException, StatusForbiddenException, AccessException {
 
-        if (StringUtils.isEmpty(replyDto.getReply().getContent().trim())) {
-            throw new StatusFailException("回复内容不能为空！");
-        }
+        commonValidator.validateContent(replyDto.getReply().getContent(), "回复",10000);
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
@@ -471,7 +470,7 @@ public class CommentManager {
                         reply.getFromUid());
             }
 
-            ReplyVo replyVo = new ReplyVo();
+            ReplyVO replyVo = new ReplyVO();
             BeanUtil.copyProperties(reply, replyVo);
             replyVo.setFromTitleName(userRolesVo.getTitleName());
             replyVo.setFromTitleColor(userRolesVo.getTitleColor());
@@ -481,10 +480,10 @@ public class CommentManager {
         }
     }
 
-    public void deleteReply(ReplyDto replyDto) throws StatusForbiddenException, StatusFailException, AccessException {
+    public void deleteReply(ReplyDTO replyDto) throws StatusForbiddenException, StatusFailException, AccessException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+        UserRolesVO userRolesVo = (UserRolesVO) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");

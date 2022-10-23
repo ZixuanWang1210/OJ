@@ -3,11 +3,7 @@ package top.hcode.hoj.dao.discussion;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import top.hcode.hoj.pojo.entity.discussion.Comment;
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.hcode.hoj.pojo.entity.discussion.Reply;
-import top.hcode.hoj.pojo.vo.CommentVo;
-import top.hcode.hoj.pojo.vo.ReplyVo;
-
-import java.util.List;
+import top.hcode.hoj.pojo.vo.CommentVO;
 
 /**
  * <p>
@@ -19,7 +15,7 @@ import java.util.List;
  */
 public interface CommentEntityService extends IService<Comment> {
 
-    IPage<CommentVo> getCommentList(int limit, int currentPage, Long cid, Integer did, Boolean isRoot, String uid);
+    IPage<CommentVO> getCommentList(int limit, int currentPage, Long cid, Integer did, Boolean isRoot, String uid);
 
     void updateCommentMsg(String recipientId, String senderId, String content, Integer discussionId, Long gid);
 

@@ -260,15 +260,15 @@ samp {
 ::-webkit-scrollbar {
   width: 10px;
   height: 12px;
-  background-color: #fff;
+  -webkit-box-shadow: inset 0 0 6px rgb(0 0 0 / 20%);
 }
 
 ::-webkit-scrollbar-thumb {
   display: block;
   min-height: 12px;
   min-width: 10px;
-  border-radius: 6px;
-  background-color: rgb(217, 217, 217);
+  border-radius: 8px;
+  background-color: #bbb;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -341,12 +341,28 @@ a:hover {
   font-family: "Raleway";
 }
 
-.contest-rank-switch {
-  margin-bottom: 30px;
-  margin-top: -8px;
+.contest-rank-filter{
+  margin: 10px 0;
 }
-.contest-rank-switch span {
+.contest-rank-config{
+  text-align:right; 
+  margin-top: 15px;
+}
+.contest-scoreBoard-config{
+  margin-top: 30px !important;
+}
+.contest-rank-config span {
   margin-left: 5px;
+}
+@media screen and (max-width: 992px) {
+  .contest-rank-config{
+    text-align:center; 
+    margin-bottom: 10px;
+    margin-top: -1px;
+  }
+  .contest-scoreBoard-config{
+    margin-top: 10px !important;
+  }
 }
 .contest-rank-concerned {
   font-size: 1rem;

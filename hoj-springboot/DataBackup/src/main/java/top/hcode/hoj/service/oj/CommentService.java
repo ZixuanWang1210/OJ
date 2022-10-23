@@ -1,28 +1,27 @@
 package top.hcode.hoj.service.oj;
 
 import top.hcode.hoj.common.result.CommonResult;
-import top.hcode.hoj.pojo.dto.ReplyDto;
+import top.hcode.hoj.pojo.dto.ReplyDTO;
 import top.hcode.hoj.pojo.entity.discussion.Comment;
-import top.hcode.hoj.pojo.entity.discussion.Reply;
-import top.hcode.hoj.pojo.vo.CommentListVo;
-import top.hcode.hoj.pojo.vo.CommentVo;
-import top.hcode.hoj.pojo.vo.ReplyVo;
+import top.hcode.hoj.pojo.vo.CommentListVO;
+import top.hcode.hoj.pojo.vo.CommentVO;
+import top.hcode.hoj.pojo.vo.ReplyVO;
 
 import java.util.List;
 
 public interface CommentService {
 
-    public CommonResult<CommentListVo> getComments(Long cid, Integer did, Integer limit, Integer currentPage);
+    public CommonResult<CommentListVO> getComments(Long cid, Integer did, Integer limit, Integer currentPage);
 
-    public CommonResult<CommentVo> addComment(Comment comment);
+    public CommonResult<CommentVO> addComment(Comment comment);
 
     public CommonResult<Void> deleteComment(Comment comment);
 
     public CommonResult<Void> addCommentLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType);
 
-    public CommonResult<List<ReplyVo>> getAllReply(Integer commentId, Long cid);
+    public CommonResult<List<ReplyVO>> getAllReply(Integer commentId, Long cid);
 
-    public CommonResult<ReplyVo> addReply(ReplyDto replyDto);
+    public CommonResult<ReplyVO> addReply(ReplyDTO replyDto);
 
-    public CommonResult<Void> deleteReply(ReplyDto replyDto);
+    public CommonResult<Void> deleteReply(ReplyDTO replyDto);
 }
