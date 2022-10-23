@@ -9,17 +9,13 @@
           active-text-color="#2196f3"
           text-color="#495060"
         >
+
+        <!-- 删去点击logo切换语言 -->
           <div class="logo">
-            <el-tooltip
-              :content="$t('m.Click_To_Change_Web_Language')"
-              placement="bottom"
-              effect="dark"
-            >
               <el-image
                 style="width: 139px; height: 50px"
                 :src="imgUrl"
                 fit="scale-down"
-                @click="changeWebLanguage"
               ></el-image>
             </el-tooltip>
           </div>
@@ -68,15 +64,13 @@
             >{{ $t('m.NavBar_Group') }}</el-menu-item
           >
 
+          <!-- 删去开源仓库信息 -->
           <el-submenu index="about">
             <template slot="title"
               ><i class="el-icon-info"></i>{{ $t('m.NavBar_About') }}</template
             >
             <el-menu-item index="/introduction">{{
               $t('m.NavBar_Introduction')
-            }}</el-menu-item>
-            <el-menu-item index="/developer">{{
-              $t('m.NavBar_Developer')
             }}</el-menu-item>
           </el-submenu>
 

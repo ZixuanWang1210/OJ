@@ -91,12 +91,8 @@
               <span class="el-dropdown-link">
                 <i class="fa fa-globe" aria-hidden="true">
                   {{ this.webLanguage == 'zh-CN' ? '简体中文' : '简体中文' }}</i
-                ><i class="el-icon-arrow-up el-icon--right"></i>
+                >
               </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
-                <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
-              </el-dropdown-menu>
             </el-dropdown>
           </span>
         </div>
